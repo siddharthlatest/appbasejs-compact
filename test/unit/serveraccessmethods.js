@@ -91,6 +91,7 @@ describe('Set methods', function() {
 }) /* End of set methods */
 
 describe("Get methods", function() {
+  this.timeout(7000)
   describe("Vertex", function() {
     // beforeeach hook
     beforeEach(function() {
@@ -131,7 +132,7 @@ describe("Get methods", function() {
           }
         }
         else {
-          ab.server.vertex.set(domain+path, {"foocolor":"blue"}, function(){})
+          setTimeout(function(){ab.server.vertex.set(domain+path, {"foocolor":"blue"}, function(){})}, 3000)
           madeChange = true
         }
       })
@@ -157,16 +158,14 @@ describe("Get methods", function() {
         if (madeChange) {
           if(err) done(err)
           else {
-            console.log(result);
+            console.log(result)
             expect(result._id).to.be.a("string")
             expect(result.edges.on.order).to.equal(5.0)
             expect(result.edges.on.t_id).to.be.a("string")
             expect(result.edges.on.timestamp).to.be.a("number")
-            done()
           }
         } else {
-          console.log(result)
-          setTimeout(3000,ab.server.edges.set(domain+path, data, function(){}));
+          setTimeout(function(){ab.server.edges.set(domain+path, data, function(){})}, 2000)
           madeChange = true
         }
       })
@@ -174,3 +173,26 @@ describe("Get methods", function() {
   }) /* End of edge suite */
 
 }) /* End of get methods */
+
+describe("DELETE - ", function() {
+  describe("Vertex", function() {
+    beforeEach(function() {
+      var path = "Materials/Iron"
+      var data = {"bgcolor":"grey", "fgcolor":"silver", "density":100.0}
+      console.log("beforeEach for DELETE Vertex is being called")
+      ab.server.vertex.set(domain+path, data, function() {})
+    })
+    it("should remove specific vertex properties", function() {
+      var path = "Materials/Iron"
+      var data = ["fgcolor"]
+      async.waterfall([
+        function(callback) {
+          console.log("calling vertex delete method")
+          ab.server.vertex.delete(domain+path, data, callback)
+        }
+      ], function(err, result) {
+        console.log("delete print", result)
+      })
+    })
+  }) /* End of Vertex suite */
+}) /* End of delete methods */

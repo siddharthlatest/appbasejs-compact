@@ -91,8 +91,8 @@ describe('Set methods', function() {
 }) /* End of set methods */
 
 describe("Get methods", function() {
-  this.timeout(7000)
   describe("Vertex", function() {
+    this.timeout(5000)
     // beforeeach hook
     beforeEach(function() {
       var path = "Materials/Wood"
@@ -100,12 +100,15 @@ describe("Get methods", function() {
     })
     it("should retrieve an existing object", function(done) {
       var path = "Materials/Wood"
+      var madeChange = false
       async.waterfall([
         function(callback) {
-          ab.server.vertex.get(domain+path, callback)
+          ab.server.vertex.listen(domain+path, {"all": false, "data":["color"]}, callback)
         }
-      ], function(err, result) {
-        if(err) done(err)
+      ],function(err, result) {
+        if(err) {
+          done(err)
+        }
         else {
           expect(result.vertex._id).to.be.a("string")
           expect(result.vertex.timestamp).to.be.a("number")
@@ -119,7 +122,7 @@ describe("Get methods", function() {
       var madeChange = false
       async.waterfall([
         function(callback) {
-          ab.server.vertex.listen(domain+path, null, callback)
+          ab.server.vertex.listen(domain+path, {"all": true}, callback)
         }
       ], function(err, result) {
         if (madeChange) {
@@ -132,7 +135,7 @@ describe("Get methods", function() {
           }
         }
         else {
-          setTimeout(function(){ab.server.vertex.set(domain+path, {"foocolor":"blue"}, function(){})}, 3000)
+          ab.server.vertex.set(domain+path, {"foocolor":"blue"}, function(){})
           madeChange = true
         }
       })
@@ -152,21 +155,18 @@ describe("Get methods", function() {
       var madeChange = false
       async.waterfall([
         function(callback) {
-          ab.server.edges.get(domain+path, data, null, callback)
+          ab.server.edges.listen(domain+path, {"filters": {}}, callback)
         }
       ], function(err, result) {
         if (madeChange) {
           if(err) done(err)
           else {
-            console.log(result)
             expect(result._id).to.be.a("string")
-            expect(result.edges.on.order).to.equal(5.0)
-            expect(result.edges.on.t_id).to.be.a("string")
-            expect(result.edges.on.timestamp).to.be.a("number")
+            done()
           }
         } else {
-          setTimeout(function(){ab.server.edges.set(domain+path, data, function(){})}, 2000)
-          madeChange = true
+            ab.server.edges.set(domain+path, {"ride":{"path":"Materials/Wood"}}, function(){})
+            madeChange = true
         }
       })
     })
@@ -174,25 +174,73 @@ describe("Get methods", function() {
 
 }) /* End of get methods */
 
-describe("DELETE - ", function() {
+describe("DELETE", function() {
   describe("Vertex", function() {
     beforeEach(function() {
       var path = "Materials/Iron"
       var data = {"bgcolor":"grey", "fgcolor":"silver", "density":100.0}
-      console.log("beforeEach for DELETE Vertex is being called")
       ab.server.vertex.set(domain+path, data, function() {})
     })
-    it("should remove specific vertex properties", function() {
+    it("should remove specific vertex properties", function(done) {
       var path = "Materials/Iron"
       var data = ["fgcolor"]
       async.waterfall([
         function(callback) {
-          console.log("calling vertex delete method")
-          ab.server.vertex.delete(domain+path, data, callback)
+          ab.server.vertex.delete(domain+path, {"data":data}, callback)
         }
       ], function(err, result) {
-        console.log("delete print", result)
+        expect(result._id).to.be.a("string")
+        expect(result.timestamp).to.be.a("number")
+        expect(result.fgcolor).to.equal("")
+        done()
+      })
+    })
+    it("should remove all vertex properties", function(done) {
+      var path = "Materials/Iron"
+      async.waterfall([
+        function(callback) {
+          ab.server.vertex.delete(domain+path, {"all":true}, callback)
+        }
+      ], function(err, result) {
+        expect(result._id).to.be.a("string")
+        expect(result.timestamp).to.be.a("number")
+        expect(Object.keys(result).length).to.equal(2)
+        done()
       })
     })
   }) /* End of Vertex suite */
+  
+  describe("Edge", function() {
+    beforeEach(function() {
+      var path = "Materials/Iron"
+      var data = {"on":{"path":"Materials/Ice", "order":5.0}, 
+                  "joy":{"path":"Materials/Iron", "order":4},
+                  "ride":{"path":"Materials/Wood", "order":6.0}}
+      ab.server.edges.set(domain+path, data, function() {})
+    })
+    it("should delete specific edges", function(done) {
+      var path = "Materials/Iron"
+      var data = ["joy", "ride"]
+      async.waterfall([
+        function(callback) {
+          ab.server.edges.delete(domain+path, {"data": data}, callback)
+        }
+      ], function(err, result) {
+        done()
+      })
+    })
+    it("should delete all edges", function(done) {
+      var path = "Materials/Iron"
+      async.waterfall([
+        function(callback) {
+          ab.server.edges.delete(domain+path, {"all":true}, callback)
+        }
+      ], function(err, result) {
+        expect(result._id).to.be.a("string")
+        expect(result.timestamp).to.be.a("number")
+        expect(Object.keys(result.edges).length).to.equal(0)
+        done()
+      })
+    })
+  })
 }) /* End of delete methods */

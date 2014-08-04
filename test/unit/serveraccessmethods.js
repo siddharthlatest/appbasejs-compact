@@ -1,4 +1,4 @@
-var domain = "http://test.localhost:5005/"
+var domain = "http://app.sagar.appbase.io/"
 var expect = chai.expect
 describe('Set methods', function() {
   describe('Vertex', function() {

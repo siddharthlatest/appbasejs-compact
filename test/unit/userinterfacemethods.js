@@ -125,6 +125,66 @@ describe('interface methods', function(){
 
     })
 
+    describe('edges',function(){
+
+        var edgePath = baseUrl+"Materials/Iron";
+        var priority = 50;
+        var path = baseUrl + "Materials/Wood";
+        var ref = new ab.interface.ref(path);
+
+        beforeEach(function(done) {
+            Appbase.new(edgePath,function(error,ref){
+                if(!error){
+                    done();
+                } else {
+                    done(error);
+                }
+
+            });
+
+        });
+
+
+        it("setEdge- with an edge name, and priority- should not throw an error, return the proper reference",function(done){
+            var edgeRef = Appbase.ref(edgePath);
+
+            async.waterfall([
+                function(callback) {
+                    ref.setEdge({name:"theNameIsRock",ref:edgeRef,priority:priority}, callback);
+                }
+            ], function(err, ref){
+                if(err)
+                    done(err)
+
+                else {
+                    expect(ref.path()).to.equal(path);
+                    done()
+                }
+            })
+
+        })
+
+        it("setEdge- with edge name and no priority (time)- should not throw an error, return the proper reference",function(done){
+            var edgeRef = Appbase.ref(edgePath);
+
+            async.waterfall([
+                function(callback) {
+                    ref.setEdge({name:"theNameIsUndeadRokr",ref:edgeRef}, callback);
+                }
+            ], function(err, ref){
+                if(err)
+                    done(err)
+
+                else {
+                    expect(ref.path()).to.equal(path);
+                    done()
+                }
+            })
+
+        })
+
+    })
+
 
 
 

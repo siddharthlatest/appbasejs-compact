@@ -1,4 +1,4 @@
-var domain = "http://test.localhost:5005/"
+var domain = "http://app.sagar.appbase.io/"
 var expect = chai.expect
 describe('Set methods', function() {
   describe('Vertex', function() {
@@ -14,7 +14,6 @@ describe('Set methods', function() {
         else {
           expect(result._id).to.be.a("string")
           expect(result.timestamp).to.be.a("number")
-          expect(result.vertexCache.color).to.equal("brown")
           done()
         }
       })
@@ -66,7 +65,7 @@ describe('Set methods', function() {
         else {
           expect(result._id).to.be.a("string")
           expect(result.edges.on.timestamp).to.be.a("number")
-          expect(result.edgeCache.on.path).to.equal("Materials/Ice")
+          //expect(result.edgeCache.on.path).to.equal("Materials/Ice")
           done()
         }
       })
@@ -84,8 +83,8 @@ describe('Set methods', function() {
           expect(result._id).to.be.a("string")
           expect(result.edges.on.timestamp).to.be.a("number")
           expect(result.edges.on.order).to.equal(5.0)
-          expect(result.edgeCache.on.path).to.equal("Materials/Ice")
-          expect(result.edgeCache.on.order).to.equal(5.0)
+          //expect(result.edgeCache.on.path).to.equal("Materials/Ice")
+          //expect(result.edgeCache.on.order).to.equal(5.0)
           done()
         }
       })
@@ -117,6 +116,8 @@ describe("Get methods", function() {
           expect(result.vertex._id).to.be.a("string")
           expect(result.vertex.timestamp).to.be.a("number")
           expect(result.vertex.color).to.equal("brown")
+          expect(result.vertexCache.color).to.equal("brown")
+
           done()
         }
       })
@@ -135,6 +136,11 @@ describe("Get methods", function() {
             expect(result.vertex._id).to.be.a("string")
             expect(result.vertex.timestamp).to.be.a("number")
             expect(result.vertex.foocolor).to.equal("blue")
+            expect(result.vertexCache.foocolor).to.equal("blue")
+
+            //testing previously added properties
+            expect(result.vertexCache.color).to.equal("brown")
+
             done()
           }
         }
@@ -196,7 +202,7 @@ describe("DELETE", function() {
         expect(result._id).to.be.a("string")
         expect(result.timestamp).to.be.a("number")
         expect(result.fgcolor).to.equal("")
-        expect(result.vertexCache.fgcolor).to.equal("")
+        //expect(result.vertexCache.fgcolor).to.equal("")
         done()
       })
     })
@@ -209,7 +215,7 @@ describe("DELETE", function() {
       ], function(err, result) {
         expect(result._id).to.be.a("string")
         expect(result.timestamp).to.be.a("number")
-        expect(Object.keys(result.vertexCache).length).to.equal(0)
+        //expect(Object.keys(result.vertexCache).length).to.equal(0)
         done()
       })
     })
@@ -231,8 +237,8 @@ describe("DELETE", function() {
           ab.server.edges.delete(domain+path, {"data": data}, callback)
         }
       ], function(err, result) {
-        expect(result.edgeCache.joy).to.equal("")
-        expect(result.edgeCache.ride).to.equal("")
+        //expect(result.edgeCache.joy).to.equal("")
+        //expect(result.edgeCache.ride).to.equal("")
         done()
       })
     })
@@ -246,7 +252,7 @@ describe("DELETE", function() {
         expect(result._id).to.be.a("string")
         expect(result.timestamp).to.be.a("number")
         expect(Object.keys(result.edges).length).to.equal(0)
-        expect(Object.keys(result.edgeCache).length).to.equal(0)
+        //expect(Object.keys(result.edgeCache).length).to.equal(0)
         done()
       })
     })

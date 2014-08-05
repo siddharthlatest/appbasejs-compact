@@ -1,5 +1,5 @@
 var expect = chai.expect
-var baseUrl = "http://test.localhost:5005/"
+var baseUrl = "http://app.sagar.appbase.io/"
 
 describe('interface methods', function() {
   describe('appbase.new', function() {
@@ -101,7 +101,7 @@ describe('interface methods', function() {
     var ref = new ab.interface.ref(path)
 
     beforeEach(function(done) {
-      Appbase.new(edgePath, function(error,ref) {
+      Appbase.new(edgePath, function(error) {
         if(!error){
             done()
         } else {
@@ -109,6 +109,7 @@ describe('interface methods', function() {
         }
       })
     })
+
     it("setEdge- with an edge name, and priority- should not throw an error, return the proper reference",function(done){
       var edgeRef = Appbase.ref(edgePath)
       async.waterfall([
@@ -129,7 +130,6 @@ describe('interface methods', function() {
       var edgeRef = Appbase.ref(edgePath)
       async.waterfall([
         function(callback) {
-          console.log("calling setEdge")
           ref.setEdge({name:"theNameIsUndeadRokr", ref:edgeRef}, callback)
         }
       ], function(err, ref) {

@@ -183,6 +183,27 @@ describe('interface methods', function(){
 
         })
 
+
+        it("removeEdge- with edge name- should not throw an error, return the proper reference",function(done){
+            var edgeRef = Appbase.ref(edgePath);
+
+            async.waterfall([
+                function(callback) {
+                    ref.removeEdge({name:"theNameIsRock"}, callback);
+                }
+            ], function(err, ref){
+                if(err)
+                    done(err)
+
+                else {
+                    expect(ref.path()).to.equal(path);
+                    done()
+                }
+            })
+
+        })
+
+
     })
 
 

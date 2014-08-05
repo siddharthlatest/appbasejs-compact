@@ -32,7 +32,7 @@ describe('interface methods', function() {
     var path = baseUrl + "Materials/Wood"
     var ref = new ab.interface.ref(path)
     it("should return  ref's path path", function() {
-        expect(ref.path()).to.equal(path)
+      expect(ref.path()).to.equal(path)
     })
     it("should return outVertex's ref", function() {
       var edgeName = 'outV'
@@ -102,11 +102,11 @@ describe('interface methods', function() {
 
     beforeEach(function(done) {
       Appbase.new(edgePath, function(error,ref) {
-          if(!error){
-              done()
-          } else {
-              done(error)
-          }
+        if(!error){
+            done()
+        } else {
+            done(error)
+        }
       })
     })
     it("setEdge- with an edge name, and priority- should not throw an error, return the proper reference",function(done){
@@ -130,13 +130,13 @@ describe('interface methods', function() {
       async.waterfall([
         function(callback) {
           console.log("calling setEdge")
-          ref.setEdge({name:"theNameIsUndeadRokr", ref:edgeRef}, callback);
+          ref.setEdge({name:"theNameIsUndeadRokr", ref:edgeRef}, callback)
         }
       ], function(err, ref) {
         if(err)
           done(err)
           else {
-            expect(ref.path()).to.equal(path);
+            expect(ref.path()).to.equal(path)
             done()
           }
       })

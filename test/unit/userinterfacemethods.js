@@ -1,10 +1,17 @@
 var expect = chai.expect
-var baseUrl = "http://app.sagar.appbase.io/"
+var baseUrl = "http://app.sagar.appbase.io"
+Appbase.setBaseURL(baseUrl)
 
 describe('interface methods', function() {
+  describe('appbase baseURL',function(){
+    it('getBaseURL should return the same url as set using setBaseURL',function(){
+      expect(Appbase.getBaseURL()).to.be.equal(baseUrl)
+    })
+  })
+
   describe('appbase.new', function() {
     it("new vertex- with key- should not give an error, and ref should point to the proper path", function(done){
-      var path = baseUrl + "Materials/Wood"
+      var path = "Materials/Wood"
       Appbase.new(path, function(error,ref) {
         if(!error) {
           expect(ref.path()).to.be.equal(path)
@@ -15,7 +22,7 @@ describe('interface methods', function() {
       })
     })
     it("new vertex- without key- should not give an error, and ref should point to the proper path", function(done){
-      var path = baseUrl + "Materials"
+      var path = "Materials"
       Appbase.new(path, function(error,ref) {
         if(!error) {
           var refPath = ref.path()
@@ -29,8 +36,8 @@ describe('interface methods', function() {
   })
 
   describe('paths', function() {
-    var path = baseUrl + "Materials/Wood"
-    var ref = new ab.interface.ref(path)
+    var path = "Materials/Wood"
+    var ref = Appbase.ref(path)
     it("should return  ref's path path", function() {
       expect(ref.path()).to.equal(path)
     })
@@ -46,8 +53,8 @@ describe('interface methods', function() {
   })
 
   describe('vertex data', function() {
-    var path = baseUrl + "Materials/Wood"
-    var ref = new ab.interface.ref(path)
+    var path = "Materials/Wood"
+    var ref = Appbase.ref(path)
     it("setData should not throw an error, return the proper reference", function(done){
       var data = {"color":"brown"}
       async.waterfall([
@@ -95,10 +102,10 @@ describe('interface methods', function() {
   })
 
   describe('edges', function() {
-    var edgePath = baseUrl+"Materials/Iron"
+    var edgePath = "Materials/Iron"
     var priority = 50
-    var path = baseUrl + "Materials/Ice"
-    var ref = new ab.interface.ref(path)
+    var path = "Materials/Ice"
+    var ref = Appbase.ref(path)
 
     beforeEach(function(done) {
       Appbase.new(edgePath, function(error) {
@@ -143,18 +150,16 @@ describe('interface methods', function() {
     })
 
     it("removeEdge- with edge name- should not throw an error, return the proper reference",function(done){
-      var edgeRef = Appbase.ref(edgePath);
-
+      var edgeRef = Appbase.ref(edgePath)
       async.waterfall([
         function(callback) {
-          ref.removeEdge({name:"theNameIsRock"}, callback);
+          ref.removeEdge({name:"theNameIsRock"}, callback)
         }
       ], function(err, ref){
         if(err)
           done(err)
-
         else {
-          expect(ref.path()).to.equal(path);
+          expect(ref.path()).to.equal(path)
           done()
         }
       })

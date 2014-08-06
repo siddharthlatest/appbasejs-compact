@@ -175,7 +175,7 @@ describe("Get methods", function() {
             done()
           }
         } else {
-            ab.server.edges.delete(domain+path, {"data": ["ride"]}, function(){})
+            ab.server.edges.delete(domain+path, {"data": ["ride"]}, function(err){console.log(err)})
             madeChange = true
         }
       })

@@ -155,7 +155,7 @@ describe('interface methods', function() {
         function(callback) {
           ref.removeEdge({name:"theNameIsRock"}, callback)
         }
-      ], function(err, ref){
+      ], function(err, ref) {
         if(err)
           done(err)
         else {

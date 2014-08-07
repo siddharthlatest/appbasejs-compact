@@ -65,7 +65,6 @@ describe('Set methods', function() {
         else {
           expect(result._id).to.be.a("string")
           expect(result.edges.on.timestamp).to.be.a("number")
-          //expect(result.edgeCache.on.path).to.equal("Materials/Ice")
           done()
         }
       })
@@ -172,6 +171,7 @@ describe("Get methods", function() {
           if(err) done(err)
           else {
             expect(result._id).to.be.a("string")
+            expect(result.edgeCache["ride"]).to.equal(undefined)
             done()
           }
         } else {

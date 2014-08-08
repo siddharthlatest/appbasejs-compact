@@ -127,7 +127,7 @@ describe('interface methods', function() {
       var edgeRef = Appbase.ref(edgePath)
       async.waterfall([
         function(callback) {
-          ref.setEdge({name:"theNameIsRock", ref:edgeRef, priority:priority}, callback)
+          ref.setEdge( edgeRef, "theNameIsRock", priority, callback)
         }
       ], function(err, ref) {
         if(err)
@@ -143,7 +143,7 @@ describe('interface methods', function() {
       var edgeRef = Appbase.ref(edgePath)
       async.waterfall([
         function(callback) {
-          ref.setEdge({name:"theNameIsUndeadRokr", ref:edgeRef}, callback)
+          ref.setEdge(edgeRef, "theNameIsUndeadRokr", callback)
         }
       ], function(err, ref) {
         if(err)

@@ -106,13 +106,15 @@ describe('interface methods', function() {
   })
 
   describe('edges', function() {
+    var edgeNamespace = "Materials"
+    var edgeKey = "Iron"
     var edgePath = "Materials/Iron"
     var priority = 50
     var path = "Materials/Ice"
     var ref = Appbase.ref(path)
 
     beforeEach(function(done) {
-      Appbase.new(edgePath, function(error) {
+      Appbase.create(edgeNamespace,edgeKey, function(error) {
         if(!error){
             done()
         } else {

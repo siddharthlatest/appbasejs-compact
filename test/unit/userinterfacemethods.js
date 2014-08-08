@@ -11,10 +11,12 @@ describe('interface methods', function() {
     })
   })
 
-  describe('appbase.new', function() {
+  describe('appbase.create', function() {
     it("new vertex- with key- should not give an error, and ref should point to the proper path", function(done){
-      var path = "Materials/Wood"
-      Appbase.new(path, function(error,ref) {
+      var namespace = 'Materials'
+      var key = 'Wood'
+      var path = namespace + "/" + key
+      Appbase.create(namespace, key, function(error,ref) {
         if(!error) {
           expect(ref.path()).to.be.equal(path)
           done()
@@ -25,7 +27,7 @@ describe('interface methods', function() {
     })
     it("new vertex- without key- should not give an error, and ref should point to the proper path", function(done){
       var path = "Materials"
-      Appbase.new(path, function(error,ref) {
+      Appbase.create(path, function(error,ref) {
         if(!error) {
           var refPath = ref.path()
           expect(refPath.slice(0,refPath.lastIndexOf('/'))).to.be.equal(path)

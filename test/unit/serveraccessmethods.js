@@ -1,4 +1,4 @@
-var domain = "http://app.sagar.appbase.io/"
+var domain = "http://aphrodite.api1.appbase.io/"
 var expect = chai.expect
 describe('Set methods', function() {
   describe('Vertex', function() {
@@ -96,9 +96,9 @@ describe("Get methods", function() {
   describe("Vertex", function() {
     this.timeout(5000)
     // beforeeach hook
-    beforeEach(function() {
+    beforeEach(function(done) {
       var path = "Materials/Wood"
-      ab.server.vertex.set(domain+path, {"color":"brown"}, function() {})
+      ab.server.vertex.set(domain+path, {"color":"brown"}, done)
     })
     it("should retrieve an existing object", function(done) {
       var path = "Materials/Wood"
@@ -152,15 +152,16 @@ describe("Get methods", function() {
   }) /* End of vertex suite */
 
   describe("Edge", function() {
+    this.timeout(5000)
     // beforeeach hook
-    beforeEach(function() {
+    beforeEach(function(done) {
       var path = "Materials/Wood"
-      var data = {"on":{"path":"Materials/Ice", "order":5.0}}
-      ab.server.edges.set(domain+path, data, function() {})
+      var data = {"on":{"path":"Materials/Ice", "order":5.0},
+                  "ride":{"path":"Materials/Iron", "order":8.0}}
+      ab.server.edges.set(domain+path, data, done)
     })
     it("should retrieve edges from a vertex", function(done) {
       var path = "Materials/Wood"
-      var data = {"startAt":0}
       var madeChange = false
       async.waterfall([
         function(callback) {
@@ -170,6 +171,8 @@ describe("Get methods", function() {
         if (madeChange) {
           if(err) done(err)
           else {
+            console.log("result")
+            console.log(result)
             expect(result._id).to.be.a("string")
             expect(result.edgeCache["ride"]).to.equal(undefined)
             done()
@@ -186,10 +189,12 @@ describe("Get methods", function() {
 
 describe("DELETE", function() {
   describe("Vertex", function() {
-    beforeEach(function() {
+    beforeEach(function(done) {
       var path = "Materials/Iron"
       var data = {"bgcolor":"grey", "fgcolor":"silver", "density":100.0}
-      ab.server.vertex.set(domain+path, data, function() {})
+      ab.server.vertex.set(domain+path, data, function() {
+        done()
+      })
     })
     it("should remove specific vertex properties", function(done) {
       var path = "Materials/Iron"
@@ -199,6 +204,7 @@ describe("DELETE", function() {
           ab.server.vertex.delete(domain+path, {"data":data}, callback)
         }
       ], function(err, result) {
+        console.log(result)
         expect(result._id).to.be.a("string")
         expect(result.timestamp).to.be.a("number")
         expect(result.fgcolor).to.equal("")
@@ -222,12 +228,14 @@ describe("DELETE", function() {
   }) /* End of Vertex suite */
   
   describe("Edge", function() {
-    beforeEach(function() {
+    beforeEach(function(done) {
       var path = "Materials/Iron"
       var data = {"on":{"path":"Materials/Ice", "order":5.0}, 
                   "joy":{"path":"Materials/Iron", "order":4},
                   "ride":{"path":"Materials/Wood", "order":6.0}}
-      ab.server.edges.set(domain+path, data, function() {})
+      ab.server.edges.set(domain+path, data, function() {
+        done()
+      })
     })
     it("should delete specific edges", function(done) {
       var path = "Materials/Iron"

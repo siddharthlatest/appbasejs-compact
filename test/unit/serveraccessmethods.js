@@ -171,8 +171,6 @@ describe("Get methods", function() {
         if (madeChange) {
           if(err) done(err)
           else {
-            console.log("result")
-            console.log(result)
             expect(result._id).to.be.a("string")
             expect(result.edgeCache["ride"]).to.equal(undefined)
             done()
@@ -204,7 +202,6 @@ describe("DELETE", function() {
           ab.server.vertex.delete(domain+path, {"data":data}, callback)
         }
       ], function(err, result) {
-        console.log(result)
         expect(result._id).to.be.a("string")
         expect(result.timestamp).to.be.a("number")
         expect(result.fgcolor).to.equal("")

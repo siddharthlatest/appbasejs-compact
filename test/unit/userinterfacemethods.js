@@ -1,11 +1,13 @@
 var expect = chai.expect
-var baseUrl = "http://app.sagar.appbase.io"
-Appbase.setBaseURL(baseUrl)
+var appName = 'aphrodite'
+var appVersion = 1
+var baseUrl = "http://aphrodite.api1.appbase.io"
+Appbase.setApp(appName,appVersion)
 
 describe('interface methods', function() {
   describe('appbase baseURL',function(){
-    it('getBaseURL should return the same url as set using setBaseURL',function(){
-      expect(Appbase.getBaseURL()).to.be.equal(baseUrl)
+    it('getBaseURL should return proper URL',function(){
+      expect(ab.server.getBaseURL()).to.be.equal(baseUrl)
     })
   })
 

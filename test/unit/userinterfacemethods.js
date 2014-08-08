@@ -159,7 +159,7 @@ describe('interface methods', function() {
       var edgeRef = Appbase.ref(edgePath)
       async.waterfall([
         function(callback) {
-          ref.removeEdge({name:"theNameIsRock"}, callback)
+          ref.removeEdge("theNameIsRock", callback)
         }
       ], function(err, ref) {
         if(err)

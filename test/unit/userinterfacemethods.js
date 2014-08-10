@@ -110,7 +110,7 @@ describe('interface methods', function() {
     var edgeKey = "Iron"
     var edgePath = "Materials/Iron"
     var priority = 50
-    var path = "Materials/Ice"
+    var path = "Materials/Wood"
     var ref = Appbase.ref(path)
 
     beforeEach(function(done) {

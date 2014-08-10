@@ -16,26 +16,16 @@ describe('interface methods', function() {
       var namespace = 'Materials'
       var key = 'Wood'
       var path = namespace + "/" + key
-      Appbase.create(namespace, key, function(error,ref) {
-        if(!error) {
-          expect(ref.path()).to.be.equal(path)
-          done()
-        } else {
-          done(error)
-        }
-      })
+      var ref = Appbase.create(namespace, key)
+      expect(ref.path()).to.be.equal(path)
+      done()
     })
     it("new vertex- without key- should not give an error, and ref should point to the proper path", function(done){
       var path = "Materials"
-      Appbase.create(path, function(error,ref) {
-        if(!error) {
-          var refPath = ref.path()
-          expect(refPath.slice(0,refPath.lastIndexOf('/'))).to.be.equal(path)
-          done()
-        } else {
-          done(error)
-        }
-      })
+      var ref = Appbase.create(path)
+      var refPath = ref.path()
+      expect(refPath.slice(0,refPath.lastIndexOf('/'))).to.be.equal(path)
+      done()
     })
   })
 
@@ -113,14 +103,8 @@ describe('interface methods', function() {
     var path = "Materials/Wood"
     var ref = Appbase.ref(path)
 
-    beforeEach(function(done) {
-      Appbase.create(edgeNamespace,edgeKey, function(error) {
-        if(!error){
-            done()
-        } else {
-            done(error)
-        }
-      })
+    beforeEach(function() {
+      Appbase.create(edgeNamespace,edgeKey)
     })
 
     it("setEdge- with an edge name, and priority- should not throw an error, return the proper reference",function(done){

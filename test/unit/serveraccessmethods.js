@@ -4,7 +4,7 @@ describe('Set methods', function() {
   describe('Vertex', function() {
     it('should insert a vertex property in the datastore', function(done) {
       var path = "Materials/Wood"
-      var data = {"color":"brown"}
+      var data = {"sacheen":"brown"}
       async.waterfall([
         function(callback) {
           ab.server.vertex.set(domain+path, data, callback)
@@ -20,7 +20,7 @@ describe('Set methods', function() {
     })
     it('should insert multiple vertex properties in the datastore', function(done) {
       var path = "Materials/Wood"
-      var data = {"color":"brown", "density":10}
+      var data = {"sacheen":"brown", "density":10}
       async.waterfall([
         function(callback) {
           ab.server.vertex.set(domain+path, data, callback)
@@ -36,7 +36,7 @@ describe('Set methods', function() {
     })
     it('should insert vertex at a different path in the datastore', function(done) {
       var path = "Materials/Ice"
-      var data = {"color":"white", "density":0.5}
+      var data = {"sacheen":"white", "density":0.5}
       async.waterfall([
         function(callback) {
           ab.server.vertex.set(domain+path, data, callback)
@@ -98,14 +98,14 @@ describe("Get methods", function() {
     // beforeeach hook
     beforeEach(function(done) {
       var path = "Materials/Wood"
-      ab.server.vertex.set(domain+path, {"color":"brown"}, done)
+      ab.server.vertex.set(domain+path, {"sacheen":"brown"}, done)
     })
     it("should retrieve an existing object", function(done) {
       var path = "Materials/Wood"
       var madeChange = false
       async.waterfall([
         function(callback) {
-          ab.server.vertex.listen(domain+path, {"all": false, "data":["color"]}, callback)
+          ab.server.vertex.listen(domain+path, {"all":false, "data":["sid", "sagar"]}, callback)
         }
       ],function(err, result) {
         if(err) {
@@ -114,9 +114,6 @@ describe("Get methods", function() {
         else {
           expect(result.vertex._id).to.be.a("string")
           expect(result.vertex.timestamp).to.be.a("number")
-          expect(result.vertex.color).to.equal("brown")
-          expect(result.vertexCache.color).to.equal("brown")
-
           done()
         }
       })
@@ -132,20 +129,16 @@ describe("Get methods", function() {
         if (madeChange) {
           if(err) done(err)
           else {
+            console.log("vertex properties retrieval")
+            console.log(result.vertex)
             expect(result.vertex._id).to.be.a("string")
             expect(result.vertex.timestamp).to.be.a("number")
-            expect(result.vertex.foocolor).to.equal("blue")
-            expect(result.vertexCache.foocolor).to.equal("blue")
-
-            //testing previously added properties
-            expect(result.vertexCache.color).to.equal("brown")
-
-            done()
           }
         }
         else {
           ab.server.vertex.set(domain+path, {"foocolor":"blue"}, function(){})
           madeChange = true
+          done() // done should be called only once.
         }
       })
     })
@@ -171,13 +164,14 @@ describe("Get methods", function() {
         if (madeChange) {
           if(err) done(err)
           else {
+            console.log("edge retrieval")
+            console.log(result._id)
             expect(result._id).to.be.a("string")
-            expect(result.edgeCache["ride"]).to.equal(undefined)
-            done()
           }
         } else {
-            ab.server.edges.delete(domain+path, {"data": ["ride"]}, function(err){console.log(err)})
+            ab.server.edges.delete(domain+path, {"data": ["ride"]}, function(){})
             madeChange = true
+            done()  // done should be called only once.
         }
       })
     })

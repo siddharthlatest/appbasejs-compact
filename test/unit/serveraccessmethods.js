@@ -128,8 +128,6 @@ describe("Get methods", function() {
         if (madeChange) {
           if(err) done(err)
           else {
-            console.log("vertex properties retrieval")
-            console.log(result.vertex)
             expect(result.vertex._id).to.be.a("string")
             expect(result.vertex.timestamp).to.be.a("number")
           }
@@ -163,8 +161,6 @@ describe("Get methods", function() {
         if (madeChange) {
           if(err) done(err)
           else {
-            console.log("edge retrieval")
-            console.log(result._id)
             expect(result._id).to.be.a("string")
           }
         } else {

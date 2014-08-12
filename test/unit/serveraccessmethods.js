@@ -1,4 +1,6 @@
 var domain = "http://aphrodite.api1.appbase.io/"
+Appbase.credentials("aphrodite", "4d8d0072580912343cd74a09015cd217")
+
 var expect = chai.expect
 describe('Set methods', function() {
   describe('Vertex', function() {
@@ -82,14 +84,11 @@ describe('Set methods', function() {
           expect(result._id).to.be.a("string")
           expect(result.edges.on.timestamp).to.be.a("number")
           expect(result.edges.on.order).to.equal(5.0)
-          //expect(result.edgeCache.on.path).to.equal("Materials/Ice")
-          //expect(result.edgeCache.on.order).to.equal(5.0)
           done()
         }
       })
     })
   }) /* End of edge suite */
-  
 }) /* End of set methods */
 
 describe("Get methods", function() {

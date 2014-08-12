@@ -2,11 +2,11 @@ var expect = chai.expect
 var appName = 'aphrodite'
 var appVersion = 1
 var baseUrl = "http://aphrodite.api1.appbase.io"
-Appbase.setApp(appName,appVersion)
+Appbase.credentials(appName, "4d8d0072580912343cd74a09015cd217")
 
 describe('interface methods', function() {
-  describe('appbase baseURL',function(){
-    it('getBaseURL should return proper URL',function(){
+  describe('appbase baseURL', function() {
+    it('getBaseURL should return proper URL', function() {
       expect(ab.server.getBaseURL()).to.be.equal(baseUrl)
     })
   })
@@ -24,7 +24,7 @@ describe('interface methods', function() {
       var path = "Materials"
       var ref = Appbase.create(path)
       var refPath = ref.path()
-      expect(refPath.slice(0,refPath.lastIndexOf('/'))).to.be.equal(path)
+      expect(refPath.slice(0, refPath.lastIndexOf('/'))).to.be.equal(path)
       done()
     })
   })
@@ -104,14 +104,14 @@ describe('interface methods', function() {
     var ref = Appbase.ref(path)
 
     beforeEach(function() {
-      Appbase.create(edgeNamespace,edgeKey)
+      Appbase.create(edgeNamespace, edgeKey)
     })
 
     it("setEdge- with an edge name, and priority- should not throw an error, return the proper reference",function(done){
       var edgeRef = Appbase.ref(edgePath)
       async.waterfall([
         function(callback) {
-          ref.setEdge( edgeRef, "theNameIsRock", priority, callback)
+          ref.setEdge(edgeRef, "theNameIsRock", priority, callback)
         }
       ], function(err, ref) {
         if(err)
@@ -132,10 +132,10 @@ describe('interface methods', function() {
       ], function(err, ref) {
         if(err)
           done(err)
-          else {
-            expect(ref.path()).to.equal(path)
-            done()
-          }
+        else {
+          expect(ref.path()).to.equal(path)
+          done()
+        }
       })
     })
 
@@ -153,7 +153,6 @@ describe('interface methods', function() {
           done()
         }
       })
-
     })
   })
 })

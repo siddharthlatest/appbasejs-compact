@@ -6,7 +6,7 @@ Appbase.credentials(appName, "4d8d0072580912343cd74a09015cd217")
 
 describe('interface methods', function() {
   describe('appbase baseURL', function() {
-    it('getBaseURL should return proper URL', function() {
+    it.skip('getBaseURL should return proper URL', function() {
       expect(ab.server.getBaseURL()).to.be.equal(baseUrl)
     })
   })
@@ -20,9 +20,9 @@ describe('interface methods', function() {
       expect(ref.path()).to.be.equal(path)
       done()
     })
-    it("new vertex- without key- should not give an error, and ref should point to the proper path", function(done){
+    it("new vertex- uuid as key- should not give an error, and ref should point to the proper path", function(done){
       var path = "Materials"
-      var ref = Appbase.create(path)
+      var ref = Appbase.create(path, Appbase.uuid())
       var refPath = ref.path()
       expect(refPath.slice(0, refPath.lastIndexOf('/'))).to.be.equal(path)
       done()
@@ -92,6 +92,31 @@ describe('interface methods', function() {
           done()
         }
       })
+    })
+  })
+
+  describe('isValid', function() {
+    it("isValid- the vertex should exist",function(done){
+      Appbase.ref('Materials/Wood').isValid(function(error, bool){
+        if(error)
+          done(error)
+        else {
+          expect(bool).to.equal(true)
+          done()
+        }
+      })
+    })
+
+    it("isValid- the vertex should not exist",function(done){
+      Appbase.ref(Appbase.uuid()+ '/' + Appbase.uuid()).isValid(function(error, bool){
+        if(error)
+          done(error)
+        else {
+          expect(bool).to.equal(false)
+          done()
+        }
+      })
+
     })
   })
 

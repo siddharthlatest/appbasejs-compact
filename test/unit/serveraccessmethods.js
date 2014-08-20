@@ -2,7 +2,7 @@ var domain = "http://aphrodite.api1.appbase.io/"
 Appbase.credentials("aphrodite", "4d8d0072580912343cd74a09015cd217")
 
 var expect = chai.expect
-describe('Set methods', function() {
+describe.skip('Set methods', function() {
   describe('Vertex', function() {
     it('should insert a vertex property in the datastore', function(done) {
       var path = "Materials/Wood"
@@ -91,7 +91,7 @@ describe('Set methods', function() {
   }) /* End of edge suite */
 }) /* End of set methods */
 
-describe("Get methods", function() {
+describe.skip("Get methods", function() {
   describe("Vertex", function() {
     this.timeout(5000)
     // beforeeach hook
@@ -174,7 +174,7 @@ describe("Get methods", function() {
 
 }) /* End of get methods */
 
-describe("DELETE", function() {
+describe.skip("DELETE", function() {
   describe("Vertex", function() {
     beforeEach(function(done) {
       var path = "Materials/Iron"

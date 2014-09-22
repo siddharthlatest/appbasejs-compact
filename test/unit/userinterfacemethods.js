@@ -11,27 +11,22 @@ describe('interface methods', function() {
     })
   })
 
-  describe('appbase.create', function() {
-    it("new vertex- with key- should not give an error, and ref should point to the proper path", function(done){
+  describe('Appbase.ns().v()', function() {
+    it("Should return an appbase vertex reference", function(done){
       var namespace = 'Materials'
       var key = 'Wood'
       var path = namespace + "/" + key
-      var ref = Appbase.create(namespace, key)
+      var ref = Appbase.ns(namespace).v(key)
       expect(ref.path()).to.be.equal(path)
-      done()
-    })
-    it("new vertex- uuid as key- should not give an error, and ref should point to the proper path", function(done){
-      var path = "Materials"
-      var ref = Appbase.create(path, Appbase.uuid())
-      var refPath = ref.path()
-      expect(refPath.slice(0, refPath.lastIndexOf('/'))).to.be.equal(path)
       done()
     })
   })
 
   describe('paths', function() {
     var path = "Materials/Wood"
-    var ref = Appbase.ref(path)
+    var namespace = "Materials"
+    var key = "Wood"
+    var ref = Appbase.ns(namespace).v(key)
     it("should return  ref's path path", function() {
       expect(ref.path()).to.equal(path)
     })
@@ -48,7 +43,9 @@ describe('interface methods', function() {
 
   describe('vertex data', function() {
     var path = "Materials/Wood"
-    var ref = Appbase.ref(path)
+    var namespace = "Materials"
+    var key = "Wood"
+    var ref = Appbase.ns(namespace).v(key)
     it("setData should not throw an error, return the proper reference", function(done){
       var data = {"color":"brown"}
       async.waterfall([
@@ -95,9 +92,30 @@ describe('interface methods', function() {
     })
   })
 
+  describe.skip('destroy', function() {
+    it('should destroy a vertex and isValid should turn false', function() {
+
+    })
+  })
+
   describe('isValid', function() {
     it("isValid- the vertex should exist",function(done){
-      Appbase.ref('Materials/Wood').isValid(function(error, bool){
+      Appbase.ns('Materials').v('Wood').isValid(function(error, bool){
+        if(error)
+          done(error)
+        else {
+          expect(bool).to.equal(true)
+          done()
+        }
+      })
+    })
+
+    it("Should create a new vertex automatically", function(done){
+      var path = "Materials"
+      var ref = Appbase.ns(path).v(Appbase.uuid())
+      var refPath = ref.path()
+      expect(refPath.slice(0, refPath.lastIndexOf('/'))).to.be.equal(path)
+      ref.isValid(function(error, bool){
         if(error)
           done(error)
         else {
@@ -108,7 +126,7 @@ describe('interface methods', function() {
     })
 
     it("isValid- the vertex should not exist",function(done){
-      Appbase.ref(Appbase.uuid()+ '/' + Appbase.uuid()).isValid(function(error, bool){
+      Appbase.ns(Appbase.uuid()).v(Appbase.uuid()+'/'+Appbase.uuid()).isValid(function(error, bool){
         if(error)
           done(error)
         else {
@@ -126,17 +144,19 @@ describe('interface methods', function() {
     var edgePath = "Materials/Iron"
     var priority = 50
     var path = "Materials/Wood"
-    var ref = Appbase.ref(path)
+    var ns = "Materials"
+    var key = "Wood"
+    var ref = Appbase.ns(ns).v(key)
 
     beforeEach(function() {
-      Appbase.create(edgeNamespace, edgeKey)
+      Appbase.ns(edgeNamespace).v(edgeKey)
     })
 
     it("setEdge- with an edge name, and priority- should not throw an error, return the proper reference",function(done){
-      var edgeRef = Appbase.ref(edgePath)
+      var edgeRef = Appbase.ns(edgeNamespace).v(edgeKey)
       async.waterfall([
         function(callback) {
-          ref.setEdge(edgeRef, "theNameIsRock", priority, callback)
+          ref.setEdge("theNameIsRock", edgeRef, priority, callback)
         }
       ], function(err, ref) {
         if(err)
@@ -149,10 +169,10 @@ describe('interface methods', function() {
     })
 
     it("setEdge- with edge name and no priority (time)- should not throw an error, return the proper reference",function(done){
-      var edgeRef = Appbase.ref(edgePath)
+      var edgeRef = Appbase.ns(edgeNamespace).v(edgeKey)
       async.waterfall([
         function(callback) {
-          ref.setEdge(edgeRef, "theNameIsUndeadRokr", callback)
+          ref.setEdge("theNameIsUndeadRokr", edgeRef, callback)
         }
       ], function(err, ref) {
         if(err)
@@ -165,7 +185,7 @@ describe('interface methods', function() {
     })
 
     it("removeEdge- with edge name- should not throw an error, return the proper reference",function(done){
-      var edgeRef = Appbase.ref(edgePath)
+      var edgeRef = Appbase.ns(edgeNamespace).v(edgeKey)
       async.waterfall([
         function(callback) {
           ref.removeEdge("theNameIsRock", callback)

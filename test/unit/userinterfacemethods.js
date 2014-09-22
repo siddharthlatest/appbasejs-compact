@@ -10,6 +10,19 @@ describe('interface methods', function() {
       expect(ab.server.getBaseURL()).to.be.equal(baseUrl)
     })
   })
+  
+  describe('Appbase.serverTime', function() {
+    it('should return a number', function(done) {
+      Appbase.serverTime(function(err, time) {
+        if(err)
+          done(err)
+        else {
+          expect(typeof time === 'number')
+          done()
+        }
+      })
+    })
+  })
 
   describe('Appbase.ns().v()', function() {
     it("Should return an appbase vertex reference", function(done){

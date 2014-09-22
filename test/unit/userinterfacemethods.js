@@ -92,12 +92,6 @@ describe('interface methods', function() {
     })
   })
 
-  describe.skip('destroy', function() {
-    it('should destroy a vertex and isValid should turn false', function() {
-
-    })
-  })
-
   describe('isValid', function() {
     it("isValid- the vertex should exist",function(done){
       Appbase.ns('Materials').v('Wood').isValid(function(error, bool){
@@ -138,6 +132,33 @@ describe('interface methods', function() {
     })
   })
 
+  describe('destroy', function() {
+    it('should create a vertex, destroy it and isValid should turn false', function(done) {
+      var ref = Appbase.ns('misc').v(Appbase.uuid())
+      ref.isValid(function(error, bool) {
+        if(error)
+          done(error)
+        else {
+          expect(bool).to.equal(true)
+          ref.destroy(function(error) {
+            if(error)
+              done(error)
+            else {
+              ref.isValid(function(error, bool){
+                if(error)
+                  done(error)
+                else {
+                  expect(bool).to.equal(false)
+                  done()
+                }
+              })
+            }
+          })
+        }
+      })
+    })
+  })
+
   describe('edges', function() {
     var edgeNamespace = "Materials"
     var edgeKey = "Iron"
@@ -152,7 +173,7 @@ describe('interface methods', function() {
       Appbase.ns(edgeNamespace).v(edgeKey)
     })
 
-    it("setEdge- with an edge name, and priority- should not throw an error, return the proper reference",function(done){
+    it("setEdge- with an edge name, ref and priority- should not throw an error, return the proper reference",function(done){
       var edgeRef = Appbase.ns(edgeNamespace).v(edgeKey)
       async.waterfall([
         function(callback) {
@@ -168,7 +189,23 @@ describe('interface methods', function() {
       })
     })
 
-    it("setEdge- with edge name and no priority (time)- should not throw an error, return the proper reference",function(done){
+    it("setEdge- with an edge name, and priority, no ref- should not throw an error, return vertex of 'misc' namespace",function(done){
+      async.waterfall([
+        function(callback) {
+          ref.setEdge("theNameIsRock", priority, callback)
+        }
+      ], function(err, ref, edgeRef) {
+        var refPath = edgeRef.path()
+        if(err)
+          done(err)
+        else {
+          expect(refPath.slice(0, refPath.lastIndexOf('/'))).to.equal('misc')
+          done()
+        }
+      })
+    })
+
+    it("setEdge- with edge name, ref and no priority (time)- should not throw an error, return the proper reference",function(done){
       var edgeRef = Appbase.ns(edgeNamespace).v(edgeKey)
       async.waterfall([
         function(callback) {

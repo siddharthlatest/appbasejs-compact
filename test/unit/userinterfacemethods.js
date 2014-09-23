@@ -11,6 +11,19 @@ describe('interface methods', function() {
     })
   })
 
+  describe('Appbase.ns().search', function() {
+    it('should not throw an error, and array shouldnt be empty', function(done) {
+      Appbase.ns('tweet').search({text:'hello', properties: ['msg']},function(err, array) {
+        if(err)
+          done(err)
+        else {
+          expect(array.length > 0)
+          done()
+        }
+      })
+    })
+  })
+
   describe('Appbase.serverTime', function() {
     it('should return a number', function(done) {
       Appbase.serverTime(function(err, time) {

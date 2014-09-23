@@ -10,7 +10,7 @@ describe('interface methods', function() {
       expect(ab.server.getBaseURL()).to.be.equal(baseUrl)
     })
   })
-  
+
   describe('Appbase.serverTime', function() {
     it('should return a number', function(done) {
       Appbase.serverTime(function(err, time) {

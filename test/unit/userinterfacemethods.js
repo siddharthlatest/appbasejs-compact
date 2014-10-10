@@ -306,4 +306,14 @@ describe('interface methods', function() {
       })
     })
   })
+  
+  describe('unauth', function() {
+    it('the request should fail after calling Appbase.unauth()', function(done) {
+      Appbase.unauth()
+      Appbase.ns('tweet').search({text:'hello', properties: ['msg']},function(err, array) {
+        expect(err).to.equal("024: No app token specified")
+        done()
+      })
+    })
+  })
 })

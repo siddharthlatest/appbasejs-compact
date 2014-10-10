@@ -1,13 +1,52 @@
 var expect = chai.expect
 var appName = 'aphrodite'
+var appSecret = "4d8d0072580912343cd74a09015cd217"
 var appVersion = 1
 var baseUrl = "http://aphrodite.api1.appbase.io"
-Appbase.credentials(appName, "4d8d0072580912343cd74a09015cd217")
 
 describe('interface methods', function() {
   describe.skip('appbase baseURL', function() {
     it.skip('getBaseURL should return proper URL', function() {
       expect(ab.server.getBaseURL()).to.be.equal(baseUrl)
+    })
+  })
+  
+  describe('the REST api should work with secret, and without token', function() {
+    it("shouldn't throw error", function(done) {
+      Appbase.credentials(appName, appSecret)
+      Appbase.ns('tweet').search({text:'hello', properties: ['msg']},function(err, array) {
+        if(err)
+          done(err)
+        else {
+          expect(array).to.have.length.above(0)
+          done()
+        }
+      })
+    })
+  })
+  
+  describe('auth', function() {
+    it('should return proper credentials and userid', function(done) {
+      Appbase.credentials(appName) // removing secret from memory
+      this.timeout(60000)
+      var provider = 'google'
+      var requestUrl = ''
+      Appbase.auth(provider, {authorize: {scope: ['openid']}},  function(error, creds, requestObj) {
+        expect(1 === 2)
+        if(error) done(error)
+        var temp
+        expect(creds).to.be.an('object')
+        expect(creds.raw).to.be.an('object')
+        expect(creds.credentials.appbase).to.be.an('object')
+        expect(creds.credentials.appbase.expires_in).to.be.a('number')
+        expect(creds.credentials.appbase.access_token).to.be.a('string')
+        expect(creds.credentials.provider.access_token).to.be.a('string')
+        expect(creds.credentials.provider.provider).to.equal(provider)
+        expect(creds.credentials.provider.expires_in).to.be.a('number')
+        expect(((temp = typeof creds.uid) === 'string') || temp === 'number').to.be.true;
+        expect(creds.credentials.provider.expires_in).to.be.a('number')
+        done()
+      })
     })
   })
 
@@ -17,7 +56,7 @@ describe('interface methods', function() {
         if(err)
           done(err)
         else {
-          expect(array.length > 0)
+          expect(array).to.have.length.above(0)
           done()
         }
       })
@@ -30,7 +69,7 @@ describe('interface methods', function() {
         if(err)
           done(err)
         else {
-          expect(typeof time === 'number')
+          expect(time).to.be.a('number')
           done()
         }
       })
@@ -52,8 +91,9 @@ describe('interface methods', function() {
     var path = "Materials/Wood"
     var namespace = "Materials"
     var key = "Wood"
-    var ref = Appbase.ns(namespace).v(key)
+    var ref
     it("should return  ref's path path", function() {
+      ref = Appbase.ns(namespace).v(key)
       expect(ref.path()).to.equal(path)
     })
     it("should return outVertex's ref", function() {
@@ -71,8 +111,9 @@ describe('interface methods', function() {
     var path = "Materials/Wood"
     var namespace = "Materials"
     var key = "Wood"
-    var ref = Appbase.ns(namespace).v(key)
+    var ref
     it("setData should not throw an error, return the proper reference", function(done){
+      ref = Appbase.ns(namespace).v(key)
       var data = {"color":"brown"}
       async.waterfall([
         function(callback) {
@@ -160,6 +201,7 @@ describe('interface methods', function() {
 
   describe('destroy', function() {
     it('should create a vertex, destroy it and isValid should turn false', function(done) {
+      this.timeout(5000)
       var ref = Appbase.ns('misc').v(Appbase.uuid())
       ref.isValid(function(error, bool) {
         if(error)
@@ -193,13 +235,14 @@ describe('interface methods', function() {
     var path = "Materials/Wood"
     var ns = "Materials"
     var key = "Wood"
-    var ref = Appbase.ns(ns).v(key)
+    var ref
 
     beforeEach(function() {
       Appbase.ns(edgeNamespace).v(edgeKey)
     })
 
     it("setEdge- with an edge name, ref and priority- should not throw an error, return the proper reference",function(done){
+      ref = Appbase.ns(ns).v(key)
       var edgeRef = Appbase.ns(edgeNamespace).v(edgeKey)
       async.waterfall([
         function(callback) {

@@ -1,8 +1,12 @@
-var domain = "http://aphrodite.api1.appbase.io/"
-Appbase.credentials("aphrodite", "4d8d0072580912343cd74a09015cd217")
 
 var expect = chai.expect
 describe.skip('server methods', function() {
+  describe('creds', function() {
+    it('should set proper creds and urls', function() {
+      var domain = "http://aphrodite.api1.appbase.io/"
+      Appbase.credentials("aphrodite", "4d8d0072580912343cd74a09015cd217")
+    })
+  })
   describe('Set methods', function() {
     describe('Vertex', function() {
       it('should insert a vertex property in the datastore', function(done) {

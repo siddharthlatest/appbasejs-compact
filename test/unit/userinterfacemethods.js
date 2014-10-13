@@ -26,27 +26,60 @@ describe('interface methods', function() {
   })
   
   describe('auth', function() {
-    it('should return proper credentials and userid', function(done) {
+    var provider = 'google'
+    var requestUrl = ''
+      
+    var checkCreds = function(creds) {
+      var temp
+      expect(creds).to.be.an('object')
+      expect(creds.raw).to.be.an('object')
+      expect(creds.credentials.appbase).to.be.an('object')
+      expect(creds.credentials.appbase.expires_in).to.be.a('number')
+      expect(creds.credentials.appbase.access_token).to.be.a('string')
+      expect(creds.credentials.provider.access_token).to.be.a('string')
+      expect(creds.credentials.provider.provider).to.equal(provider)
+      expect(creds.credentials.provider.expires_in).to.be.a('number')
+      expect(((temp = typeof creds.uid) === 'string') || temp === 'number').to.be.true;
+      expect(creds.credentials.provider.expires_in).to.be.a('number')
+    }
+    
+    it('authRedirect and authCallback: the page should redirect and return proper credentials and userid', function(done) {
       Appbase.credentials(appName) // removing secret from memory
       this.timeout(60000)
-      var provider = 'google'
-      var requestUrl = ''
-      Appbase.auth(provider, {authorize: {scope: ['openid']}},  function(error, creds, requestObj) {
-        expect(1 === 2)
+      
+      var callback = function(error, creds, requestObj) {
         if(error) done(error)
-        var temp
-        expect(creds).to.be.an('object')
-        expect(creds.raw).to.be.an('object')
-        expect(creds.credentials.appbase).to.be.an('object')
-        expect(creds.credentials.appbase.expires_in).to.be.a('number')
-        expect(creds.credentials.appbase.access_token).to.be.a('string')
-        expect(creds.credentials.provider.access_token).to.be.a('string')
-        expect(creds.credentials.provider.provider).to.equal(provider)
-        expect(creds.credentials.provider.expires_in).to.be.a('number')
-        expect(((temp = typeof creds.uid) === 'string') || temp === 'number').to.be.true;
-        expect(creds.credentials.provider.expires_in).to.be.a('number')
+        localStorage.removeItem('waitingForOauthCallback')
+        checkCreds(creds)
+        done()
+      }
+      
+      if(!localStorage.getItem('waitingForOauthCallback')) {
+        localStorage.setItem('waitingForOauthCallback', true)
+        Appbase.authRedirect(provider, {authorize: {scope: ['openid']}}, document.location.href)
+      }
+      
+      Appbase.authCallback(provider, callback)         
+    })
+    
+    it('unauth: the request should fail after calling Appbase.unauth()', function(done) {
+      Appbase.unauth()
+      Appbase.ns('tweet').search({text:'hello', properties: ['msg']},function(err, array) {
+        expect(err).to.equal("024: No app token specified")
         done()
       })
+    })
+    
+    it('authPopup: it should open a popup and return proper credentials and userid', function(done) {
+      this.timeout(60000)
+      
+      var callback = function(error, creds, requestObj) {
+        if(error) done(error)
+        checkCreds(creds)
+        done()
+      }
+      
+      Appbase.authPopup(provider, {authorize: {scope: ['openid']}}, callback)
     })
   })
 
@@ -307,8 +340,8 @@ describe('interface methods', function() {
     })
   })
   
-  describe('unauth', function() {
-    it('the request should fail after calling Appbase.unauth()', function(done) {
+  describe("unauth", function(){
+    it('unauth: the request should fail after calling Appbase.unauth()', function(done) {
       Appbase.unauth()
       Appbase.ns('tweet').search({text:'hello', properties: ['msg']},function(err, array) {
         expect(err).to.equal("024: No app token specified")
@@ -316,4 +349,5 @@ describe('interface methods', function() {
       })
     })
   })
+  
 })

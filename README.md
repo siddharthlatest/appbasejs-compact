@@ -1,11 +1,16 @@
 # AppbaseJS
+NodeJS package for [Appbase.io](http://appbase.io)
 
 ## Get Appbase
 `npm install appbasejs`
 
+```js
+Appbase = require('appbasejs');
+```
+
 ## Put Credentials
 ```js
-Appbase.credentials("aphrodite", "4d8d0072580912343cd74aa0015cd217");
+Appbase.credentials(<app>,<secret>);
 ```
 
 ## Appbase references

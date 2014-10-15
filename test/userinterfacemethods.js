@@ -1,3 +1,10 @@
+var isNode = (typeof window === 'undefined')
+if(isNode) { //assuming nodejs
+  var chai = require('chai')
+  var Appbase = require('./../lib/main.js')
+  var async = require('async')
+}
+
 var expect = chai.expect
 var appName = 'aphrodite'
 var appSecret = "4d8d0072580912343cd74a09015cd217"
@@ -5,12 +12,6 @@ var appVersion = 1
 var baseUrl = "http://aphrodite.api1.appbase.io"
 
 describe('interface methods', function() {
-  describe.skip('appbase baseURL', function() {
-    it.skip('getBaseURL should return proper URL', function() {
-      expect(ab.server.getBaseURL()).to.be.equal(baseUrl)
-    })
-  })
-  
   describe('the REST api should work with secret, and without token', function() {
     it("shouldn't throw error", function(done) {
       Appbase.credentials(appName, appSecret)
@@ -25,7 +26,7 @@ describe('interface methods', function() {
     })
   })
   
-  describe('auth', function() {
+  !isNode && describe('auth', function() {
     var provider = 'google'
     var requestUrl = ''
       
@@ -340,7 +341,7 @@ describe('interface methods', function() {
     })
   })
   
-  describe("unauth", function(){
+  !isNode && describe("unauth", function(){
     it('unauth: the request should fail after calling Appbase.unauth()', function(done) {
       Appbase.unauth()
       Appbase.ns('tweet').search({text:'hello', properties: ['msg']},function(err, array) {
@@ -349,5 +350,4 @@ describe('interface methods', function() {
       })
     })
   })
-  
 })

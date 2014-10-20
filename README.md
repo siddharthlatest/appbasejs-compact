@@ -2,18 +2,36 @@
 NodeJS package for [Appbase.io](http://appbase.io)
 
 ## Get Appbase
-`npm install appbasejs`
+Node: `npm install appbasejs`
+Browser: [https://cdn.appbase.io/2.0/appbase.js](https://cdn.appbase.io/2.0/appbase.js)
 
+## Dev
+Do `npm install` inside the folder to install devDependencies.
+
+### Browser Build
+`npm run-script build`
+
+### Testing
+`npm test` for node.
+Goto [/test/browser/index.html](http://sids-aquarius.github.io/appbasejs-compact/test/browser) for browser tests.
+
+## Play
+Node:
 ```js
 Appbase = require('appbasejs');
 ```
 
-## Put Credentials
-```js
-Appbase.credentials(<app>,<secret>);
+Browser:
+```html
+<script src="./dist/appbase.min.js"></script>
 ```
 
-## Appbase references
+### Put Credentials
+```js
+Appbase.credentials('app','secret');
+```
+
+### Appbase references
 Now let's create two Appbase references under namespaces "user" and "tweets".
 
 ```js
@@ -23,7 +41,7 @@ var tweetRef = Appbase.ns("tweet").v(Appbase.uuid());
 
 As seen here, one can optionally specify the reference name.
 
-## Working with Data
+### Working with Data
 
 ```js
 userRef.setData({
@@ -40,7 +58,7 @@ Now let's add the tweet as an edge to our user reference.
 ```js
 userRef.setEdge(tweetRef, 'tweeted');
 ```
-## Go real-time! 
+### Go real-time! 
 
 Listen to the changes on the user reference data properties and edges, to see the changes we have made so far.
 
@@ -56,7 +74,7 @@ userRef.on('edge_added', function(error, edgeRef, eSnap) {
 });
 ```
 
-## Full-text search
+### Full-text search
 
 ```js
 Appbase.ns('tweet').search({text:'hello', properties: ['message']},function(err, array) {

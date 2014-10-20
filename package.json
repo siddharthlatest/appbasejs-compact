@@ -12,7 +12,15 @@
     "xhr2": "^0.1.0",
     "async": "^0.9.0",
     "mocha": "^1.21.5",
-    "chai": "^1.9.2"
+    "chai": "^1.9.2",
+    "vinyl-transform": "0.0.1",
+    "gulp": "^3.8.8",
+    "gulp-uglify": "^1.0.1",
+    "browserify": "^6.1.0",
+    "gulp-rename": "^1.2.0"
   },
-  "scripts":{"test": "mocha --check-leaks"}
+  "scripts": {
+    "test": "mocha --check-leaks",
+    "build": "gulp build"
+  }
 }

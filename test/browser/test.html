@@ -3,19 +3,19 @@
 <head>
   <meta charset="utf-8">
   <title>Appbase.js tests</title>
-  <link rel="stylesheet" media="all" href="../vendor/mocha.css">
+  <link rel="stylesheet" media="all" href="./mocha.css">
 </head>
 <body>
   <div id="mocha"><p><a href=".">Index</a></p></div>
   <div id="messages"></div>
   <div id="fixtures"></div>
-  <script src="../vendor/mocha.js"></script>
-  <script src="../vendor/chai.js"></script>
-  <script src="../vendor/async.js"></script>
-  <script src="../lib/appbase.js"></script>
+  <script src="./mocha.js"></script>
+  <script src="./chai.js"></script>
+  <script src="./../../../node_modules/async/lib/async.js"></script>
+  <script src="./../../../dist/appbase.min.js"></script>
   <script>mocha.setup('bdd')</script>
-  <script src="../test/unit/serveraccessmethods.js"></script>
-  <script src="../test/unit/userinterfacemethods.js"></script>
+  <script src="../serveraccessmethods.js"></script>
+  <script src="../userinterfacemethods.js"></script>
   <script>mocha.run();</script>
 </body>
 </html>

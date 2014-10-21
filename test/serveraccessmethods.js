@@ -5,7 +5,7 @@ if(isNode) { //test only if node
   var async = require('async');
   var appName = 'aphrodite';
   var appSecret = "4d8d0072580912343cd74a09015cd217";
-  var domain = 'http://'+ appName + '.' + 'api2.appbase.io';
+  var domain = 'https://api.appbase.io/'+ appName +'/v2';
   ab.server.setBaseURL(domain);
   ab.server.setAppSecret(appSecret); // TODO: Use server method to set secret
   ab.server.setApp(appName);

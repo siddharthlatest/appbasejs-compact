@@ -9,7 +9,7 @@ var expect = chai.expect
 var appName = 'aphrodite'
 var appSecret = "4d8d0072580912343cd74a09015cd217"
 var appVersion = 1
-var baseUrl = "http://aphrodite.api1.appbase.io"
+var baseUrl = 'https://api.appbase.io/'+ appName +'/v2'
 
 describe('interface methods', function() {
   describe('the REST api should work with secret, and without token', function() {

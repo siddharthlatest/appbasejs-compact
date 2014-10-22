@@ -50,13 +50,13 @@ describe('interface methods', function() {
       
       var callback = function(error, creds, requestObj) {
         if(error) done(error)
-        localStorage.removeItem('waitingForOauthCallback')
+        sessionStorage.removeItem('waitingForOauthCallback')
         checkCreds(creds)
         done()
       }
       
-      if(!localStorage.getItem('waitingForOauthCallback')) {
-        localStorage.setItem('waitingForOauthCallback', true)
+      if(!sessionStorage.getItem('waitingForOauthCallback')) {
+        sessionStorage.setItem('waitingForOauthCallback', true)
         Appbase.authRedirect(provider, {authorize: {scope: ['openid']}}, document.location.href)
       }
       

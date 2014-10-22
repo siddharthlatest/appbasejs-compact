@@ -235,7 +235,7 @@ describe('interface methods', function() {
 
   describe('destroy', function() {
     it('should create a vertex, destroy it and isValid should turn false', function(done) {
-      this.timeout(5000)
+      this.timeout(10000)
       var ref = Appbase.ns('misc').v(Appbase.uuid())
       ref.isValid(function(error, bool) {
         if(error)

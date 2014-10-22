@@ -21,7 +21,7 @@
     "oauth-js": "git://github.com/oauth-io/oauth-js"
   },
   "scripts": {
-    "test": "mocha --check-leaks",
+    "test": "mocha --check-leaks --timeout 5000",
     "build": "gulp build",
     "test_build": "gulp build_for_test"
   }

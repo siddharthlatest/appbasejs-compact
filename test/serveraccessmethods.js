@@ -1,8 +1,11 @@
 var isNode = (typeof window === 'undefined'); // assuming nodejs
-if(isNode) { //test only if node
-  var chai = require('chai');
-  var ab = require('./../lib/ab/');
-  var async = require('async');
+if(isNode || (typeof ab !== 'undefined' && typeof ab.server !== 'undefined')) { //test only if node, or, internal namespace 'ab' is available
+  if(isNode) { //require libraries if node
+    var chai = require('chai');
+    var ab = require('./../lib/ab/');
+    var async = require('async');
+  }
+  
   var appName = 'aphrodite';
   var appSecret = "4d8d0072580912343cd74a09015cd217";
   var domain = 'https://api.appbase.io/'+ appName +'/v2';

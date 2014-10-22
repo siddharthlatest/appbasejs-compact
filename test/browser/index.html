@@ -9,10 +9,15 @@
   <div id="mocha"><p><a href=".">Index</a></p></div>
   <div id="messages"></div>
   <div id="fixtures"></div>
+  <script src="./../../build/appbase.js"></script>
   <script src="./mocha.js"></script>
   <script src="./chai.js"></script>
   <script src="./async.js"></script>
-  <script src="./../../dist/appbase.min.js"></script>
+  <script>
+    if (typeof Appbase === 'undefined') { //check if a test build is already loaded
+      document.write('<script src="./../../dist/appbase.min.js"><\/script>');
+    }
+  </script>
   <script>mocha.setup('bdd')</script>
   <script src="../serveraccessmethods.js"></script>
   <script src="../userinterfacemethods.js"></script>

@@ -22,6 +22,7 @@
   },
   "scripts": {
     "test": "mocha --check-leaks",
-    "build": "gulp build"
+    "build": "gulp build",
+    "test_build": "gulp build_for_test"
   }
 }

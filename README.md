@@ -10,12 +10,18 @@ Browser: [https://cdn.appbase.io/2.0/appbase.js](https://cdn.appbase.io/2.0/appb
 Do `npm install` inside the folder to install devDependencies.
 
 #### Browser Build
-`npm run-script build`
+
+##### Distribution build
+`npm run-script build`: creates _./dist/appbase.min.js_
+
+
+##### Test build
+`npm run-script test_build`: creates _./build/appbase.js_ this build exposes internal server methods, and allows running tests on them in the browser.
 
 #### Testing
 `npm test` for node.
 
-Goto [/test/browser/index.html](http://sids-aquarius.github.io/appbasejs-compact/test/browser) for browser tests.
+Goto [/test/browser/index.html](http://sids-aquarius.github.io/appbasejs-compact/test/browser) for browser tests. If there's a test build, it will also run tests on internal server methods as well, otherwise will run tests only on interface methods.
 
 ## Play
 Node:

@@ -8,7 +8,7 @@ if(isNode || (typeof ab !== 'undefined' && typeof ab.server !== 'undefined')) { 
   
   var appName = 'aphrodite';
   var appSecret = "4d8d0072580912343cd74a09015cd217";
-  var domain = 'https://api.appbase.io/'+ appName +'/v2';
+  var domain = (isNode? "http:" : location.protocol) + '//api.appbase.io/'+ appName +'/v2';
   ab.server.setBaseURL(domain);
   ab.server.setAppSecret(appSecret); // TODO: Use server method to set secret
   ab.server.setApp(appName);

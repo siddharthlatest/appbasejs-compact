@@ -408,7 +408,7 @@ describe('interface methods', function() {
             }
           });
         
-          //after started to listen, add 2 more edges
+          //after started to listen, add 2 more edges - only these edges should be fired
           var counter = noEdges;
           setTimeout( 
             async.whilst(function() { return counter;}, 

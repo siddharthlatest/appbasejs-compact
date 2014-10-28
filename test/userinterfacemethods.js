@@ -271,10 +271,6 @@ describe('interface methods', function() {
     var key = "Wood"
     var ref
 
-    beforeEach(function() {
-      Appbase.ns(edgeNamespace).v(edgeKey)
-    })
-
     it("setEdge- with an edge name, ref and priority- should not throw an error, return the proper reference",function(done){
       ref = Appbase.ns(ns).v(key)
       var edgeRef = Appbase.ns(edgeNamespace).v(edgeKey)
@@ -337,6 +333,96 @@ describe('interface methods', function() {
           expect(ref.path()).to.equal(path)
           done()
         }
+      })
+    })
+  })
+  
+  describe("Listen: edges with filters", function() {
+    it("edges: without filters: should get existing edges as well", function(done) {
+      this.timeout(20000);
+      var ref = Appbase.ns('misc').v(Appbase.uuid());
+      var edges = [];
+      var noEdges = 5;
+      async.whilst(function() { return edges.length < 3;}, 
+        function(callback) {
+          var edgeName = Appbase.uuid();
+          edges.push(edgeName);
+          ref.setEdge(edgeName, callback);
+        }
+      , function(error) {
+          if(error) return done(error);
+          ref.on('edge_added', function(error, edgeRef, edgeSnap) {
+            var i;
+            if((i = edges.indexOf(edgeSnap.name())) > -1) {
+              edges.splice(i, 1);
+              noEdges -= 1;
+              if(noEdges === 0) {
+                done();
+              }
+            } else {
+              done('wrong edges are returning.');
+            }
+          });
+        
+          //after started to listen, add 2 more edges
+          var counter = noEdges;
+          setTimeout( 
+            async.whilst(function() { return counter;}, 
+              function(callback) {
+                counter -= 1;
+                var edgeName = Appbase.uuid();
+                edges.push(edgeName);
+                ref.setEdge(edgeName, callback);
+              },
+              function(error) {
+                if(error) return done(error);
+              }
+            )
+          ,1000);
+      })
+    })
+    
+    it("edges: with filters: onlyTrue: should get only new edges", function(done) {
+      this.timeout(20000);
+      var ref = Appbase.ns('misc').v(Appbase.uuid());
+      var edges = [];
+      var noEdges = 5;
+      async.whilst(function() { return noEdges > 2;}, 
+        function(callback) {
+          noEdges -= 1;
+          var edgeName = Appbase.uuid();
+          ref.setEdge(edgeName, callback);
+        }
+      , function(error) {
+          if(error) return done(error);
+          ref.on('edge_added', { onlyNew: true } ,function(error, edgeRef, edgeSnap) {
+            var i;
+            if((i = edges.indexOf(edgeSnap.name())) > -1) {
+              edges.splice(i, 1);
+              noEdges -= 1;
+              if(noEdges === 0) {
+                done();
+              }
+            } else {
+              done('wrong edges are returning.');
+            }
+          });
+        
+          //after started to listen, add 2 more edges
+          var counter = noEdges;
+          setTimeout( 
+            async.whilst(function() { return counter;}, 
+              function(callback) {
+                counter -= 1;
+                var edgeName = Appbase.uuid();
+                edges.push(edgeName);
+                ref.setEdge(edgeName, callback);
+              },
+              function(error) {
+                if(error) return done(error);
+              }
+            )
+          ,1000);
       })
     })
   })

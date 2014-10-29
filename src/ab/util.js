@@ -87,11 +87,12 @@ ab.util = {
     console.log('generating', rData);
     var fString = ':filters-';
     if(rData && rData.filters) {
-      fString += (rData.filters.startAt !== undefined) ? 'startAt=' + rData.filters.startAt + ',' : '';
-      fString += (rData.filters.endAt !== undefined) ? 'endAt=' + rData.filters.endAt + ',' : '';
-      fString += (rData.filters.limit !== undefined) ? 'limit=' + rData.filters.limit + ',' : '';
+      fString += (rData.filters.startAt !== undefined) ? 'startAt=' + rData.filters.startAt + '.' : '';
+      fString += (rData.filters.endAt !== undefined) ? 'endAt=' + rData.filters.endAt + '.' : '';
+      fString += (rData.filters.limit !== undefined) ? 'limit=' + rData.filters.limit + '.' : '';
+      fString += (rData.filters.skip !== undefined) ? 'skip=' + rData.filters.skip + '.' : '';
     }
-    return fString += (rData.timestamp !== undefined)? 'timestamp=' + rData.timestamp : '';
+    return fString += (rData.timestamp !== undefined)? 'timestamp=' + rData.timestamp + '.' : '';
   }
 }
 

@@ -6,7 +6,7 @@
     "xhr2": "^0.1.0"
   },
   "author": "Appbase (http://appbase.io)",
-  "main": "lib/main.js",
+  "main": "src/main.js",
   "devDependencies": {
     "socket.io-client": "~1.0.6",
     "xhr2": "^0.1.0",

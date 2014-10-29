@@ -1,7 +1,7 @@
 var isNode = (typeof window === 'undefined')
 if(isNode) { //assuming nodejs
   var chai = require('chai')
-  var Appbase = require('./../lib/main.js')
+  var Appbase = require('./../src/main.js')
   var async = require('async')
 }
 

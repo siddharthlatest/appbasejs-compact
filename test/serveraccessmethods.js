@@ -2,7 +2,7 @@ var isNode = (typeof window === 'undefined'); // assuming nodejs
 if(isNode || (typeof ab !== 'undefined' && typeof ab.server !== 'undefined')) { //test only if node, or, internal namespace 'ab' is available
   if(isNode) { //require libraries if node
     var chai = require('chai');
-    var ab = require('./../lib/ab/');
+    var ab = require('./../src/ab/');
     var async = require('async');
   }
   

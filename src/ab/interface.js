@@ -42,6 +42,10 @@ if(config.isWindow) {
         options = {}
       }
       options.cache = true
+      if(!options.authorize) {
+        options.authorize = {}
+      }
+      options.authorize.response_type = "code"
       var tB;
       if((tB = typeof cb) === 'function') {
         OAuth.popup(provider, options, ab.interface.auth.completeAuth(provider, cb))

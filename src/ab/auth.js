@@ -4,7 +4,7 @@ var atomic = require("./../atomic.js");
 ab.auth = {
   config: {
     oauthdURL: 'https://auth.appbase.io/',
-    oauthMiddleSever: 'https://auth.appbase.io:444',
+    oauthMiddleSever: 'https://auth.appbase.io:3000',
     oauthTokenURL: '/oauth/signin',
     oauthRefreshURL: '/oauth/refresh',
   },

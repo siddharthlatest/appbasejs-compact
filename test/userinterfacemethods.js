@@ -12,9 +12,26 @@ var appVersion = 1
 var baseUrl = (isNode? "http:" : location.protocol) + '//api.appbase.io/'+ appName +'/v2'
 
 describe('interface methods', function() {
+  describe('credentials', function() {
+    it('should fail with wrong credentials', function(done) {
+      Appbase.credentials(appName, 'randomshit', function(error, valid) {
+        if(error) done(error);
+        expect(valid).to.not.be.ok;
+        done();
+      })
+    })
+    
+    it('should work with right credentials', function(done) {
+      Appbase.credentials(appName, appSecret, function(error, valid) {
+        if(error) done(error);
+        expect(valid).to.be.ok;
+        done();
+      })
+    })
+  })
+  
   describe('the REST api should work with secret, and without token', function() {
     it("shouldn't throw error", function(done) {
-      Appbase.credentials(appName, appSecret)
       Appbase.ns('tweet').search({text:'hello', properties: ['msg']},function(err, array) {
         if(err)
           done(err)

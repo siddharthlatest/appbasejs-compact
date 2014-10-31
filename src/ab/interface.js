@@ -124,8 +124,9 @@ ab.interface.ns = function(namespace) {
 }
 
 ab.interface.isValid = function(url, callback) {
-  ab.server.vertex.get(url, function(error, result) {
-    callback && callback(error !== null && error !== '101: Resource does not exist'? error : null, !(error && error === '101: Resource does not exist'))
+  ab.server.vertex.get(url, function(er, result) {
+    var error = (er !== null && er !== '101: Resource does not exist') ? er : null
+    callback && (error ? callback(error) : callback(null, er !== '101: Resource does not exist'))
   })
 }
 

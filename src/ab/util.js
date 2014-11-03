@@ -50,7 +50,8 @@ ab.util = {
     }
   },
   URLToPath: function(URL) {
-    return URL.replace(ab.server.baseURL + '/','');
+    var temp;
+    return URL.slice(0, (temp = URL.indexOf(':', 5)) !== -1 ? temp : undefined).replace(ab.server.baseURL + '/','');
   },
   uuid: function() {
     return 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -81,6 +82,17 @@ ab.util = {
       obj_path: obj_path
     }
     return retObj;
+  },
+  generateFilterString: function(rData) {
+    console.log('generating', rData);
+    var fString = ':filters-';
+    if(rData && rData.filters) {
+      fString += (rData.filters.startAt !== undefined) ? 'startAt=' + rData.filters.startAt + '.' : '';
+      fString += (rData.filters.endAt !== undefined) ? 'endAt=' + rData.filters.endAt + '.' : '';
+      fString += (rData.filters.limit !== undefined) ? 'limit=' + rData.filters.limit + '.' : '';
+      fString += (rData.filters.skip !== undefined) ? 'skip=' + rData.filters.skip + '.' : '';
+    }
+    return fString += (rData.timestamp !== undefined)? 'timestamp=' + rData.timestamp + '.' : '';
   }
 }
 

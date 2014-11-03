@@ -11,7 +11,7 @@ ab.server.realtime.socket.on('reconnect', function() {
   console.log('reconnect')
   //re-emit events, with timestamp
   for(var url in ab.server.ns.namespacesListening){
-    ab.server.ns.namespacesListening[url].timestamp = ab.cache.ns.timestamps[url]
+    //timestamp dsnt work for namespaces ab.server.ns.namespacesListening[url].timestamp = ab.cache.ns.timestamps[url]
     console.log('re-emitting:', url,'ns')
     ab.server.realtime.socket.emit('new vertices', ab.server.ns.namespacesListening[url])
   }
@@ -274,17 +274,20 @@ ab.server.edges = {
     }
   },
   listen: function(url, requestdata, callback) {
-    // url format - 'http://appname.localhost:5005/Materials/Ice/dad/dsd'
     var data = ab.util.parseURL(url)
+    url += ab.util.generateFilterString(requestdata)
+    console.log('listening:', url);
     data["filters"] = requestdata.filters
     data["listener_id"] = ab.util.uuid()
     ab.util.setCredsInData(data)
     var event = JSON.stringify(data)
+    data.timestamp = requestdata.timestamp
     var listener
     ab.server.realtime.socket.on(event, listener = function(result) {
+      console.log('arrived:', url);
       if(typeof result === 'string') {
         delete ab.server.edges.urlsListening[url]
-        if(result === 'STOPPED'){
+        if(result === 'STOPPED') {
           ab.server.realtime.socket.removeListener(event,listener)
           return
         }
@@ -327,6 +330,9 @@ ab.server.edges = {
     })
 
     ab.server.edges.urlsListening[url] = data
+    if(ab.cache.timestamps[url] === undefined) ab.cache.timestamps[url] = {}
+    ab.cache.timestamps[url]['edges'] = requestdata.timestamp
+    data.timestamp = requestdata.timestamp
     ab.server.realtime.socket.emit("edges", data)
   },
   delete: function(url, data, callback) {

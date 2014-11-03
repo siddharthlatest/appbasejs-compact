@@ -1,7 +1,7 @@
 var isNode = (typeof window === 'undefined')
 if(isNode) { //assuming nodejs
   var chai = require('chai')
-  var Appbase = require('./../lib/main.js')
+  var Appbase = require('./../src/main.js')
   var async = require('async')
 }
 
@@ -12,9 +12,26 @@ var appVersion = 1
 var baseUrl = (isNode? "http:" : location.protocol) + '//api.appbase.io/'+ appName +'/v2'
 
 describe('interface methods', function() {
+  describe('credentials', function() {
+    it('should fail with wrong credentials', function(done) {
+      Appbase.credentials(appName, 'randomshit', function(error, valid) {
+        if(error) done(error);
+        expect(valid).to.not.be.ok;
+        done();
+      })
+    })
+    
+    it('should work with right credentials', function(done) {
+      Appbase.credentials(appName, appSecret, function(error, valid) {
+        if(error) done(error);
+        expect(valid).to.be.ok;
+        done();
+      })
+    })
+  })
+  
   describe('the REST api should work with secret, and without token', function() {
     it("shouldn't throw error", function(done) {
-      Appbase.credentials(appName, appSecret)
       Appbase.ns('tweet').search({text:'hello', properties: ['msg']},function(err, array) {
         if(err)
           done(err)
@@ -271,10 +288,6 @@ describe('interface methods', function() {
     var key = "Wood"
     var ref
 
-    beforeEach(function() {
-      Appbase.ns(edgeNamespace).v(edgeKey)
-    })
-
     it("setEdge- with an edge name, ref and priority- should not throw an error, return the proper reference",function(done){
       ref = Appbase.ns(ns).v(key)
       var edgeRef = Appbase.ns(edgeNamespace).v(edgeKey)
@@ -340,6 +353,233 @@ describe('interface methods', function() {
       })
     })
   })
+  
+  describe("Listen: edges with filters", function() {
+    var appName = 'aphrodite'
+    var appSecret = "4d8d0072580912343cd74a09015cd217"
+    Appbase.credentials(appName, appSecret)
+    var refs = [];
+    it("edges: without filters: should get existing edges as well", function(done) {
+      this.timeout(20000);
+      var ref = Appbase.ns('misc').v(Appbase.uuid());
+      refs[0] = ref;
+      var edges = [];
+      var noEdges = 5;
+      async.whilst(function() { return edges.length < 3;}, 
+        function(callback) {
+          var edgeName = Appbase.uuid();
+          edges.push(edgeName);
+          ref.setEdge(edgeName, callback);
+        }
+      , function(error) {
+          if(error) return done(error);
+          ref.on('edge_added', function(error, edgeRef, edgeSnap) {
+            var i;
+            if((i = edges.indexOf(edgeSnap.name())) > -1) {
+              edges.splice(i, 1);
+              noEdges -= 1;
+              if(noEdges === 0) {
+                done();
+              }
+            } else {
+              done('wrong edges are returning.');
+            }
+          });
+        
+          //after started to listen, add 2 more edges
+          var counter = noEdges;
+          setTimeout( 
+            async.whilst(function() { return counter;}, 
+              function(callback) {
+                counter -= 1;
+                var edgeName = Appbase.uuid();
+                edges.push(edgeName);
+                ref.setEdge(edgeName, callback);
+              },
+              function(error) {
+                if(error) return done(error);
+              }
+            )
+          ,1000);
+      })
+    })
+    
+    it("edges: with filters: onlyTrue: should get only new edges", function(done) {
+      this.timeout(20000);
+      var ref = Appbase.ns('misc').v(Appbase.uuid());
+      refs[1] = ref;
+      var edges = [];
+      var noEdges = 5;
+      async.whilst(function() { return noEdges > 2;}, 
+        function(callback) {
+          noEdges -= 1;
+          var edgeName = Appbase.uuid();
+          ref.setEdge(edgeName, callback);
+        }
+      , function(error) {
+          if(error) return done(error);
+          ref.on('edge_added', { onlyNew: true } ,function(error, edgeRef, edgeSnap) {
+            var i;
+            if((i = edges.indexOf(edgeSnap.name())) > -1) {
+              edges.splice(i, 1);
+              noEdges -= 1;
+              if(noEdges === 0) {
+                done();
+              }
+            } else {
+              done('wrong edges are returning.');
+            }
+          });
+        
+          //after started to listen, add 2 more edges - only these edges should be fired
+          var counter = noEdges;
+          setTimeout( 
+            async.whilst(function() { return counter;}, 
+              function(callback) {
+                counter -= 1;
+                var edgeName = Appbase.uuid();
+                edges.push(edgeName);
+                ref.setEdge(edgeName, callback);
+              },
+              function(error) {
+                if(error) return done(error);
+              }
+            )
+          ,1000);
+      })
+    })
+    
+    it("edges: with filters: startAt: should only get edges with certain priorities", function(done) {
+      this.timeout(20000);
+      var ref = Appbase.ns('misc').v(Appbase.uuid());
+      refs[2] = ref;
+      var edges = [];
+      var startAt = 3;
+      var noEdges = 5;
+      async.whilst(function() { return noEdges;}, 
+        function(callback) {
+          var edgeName = Appbase.uuid();
+          if(noEdges >= startAt) {
+            edges.push(edgeName);
+          }
+          ref.setEdge(edgeName, noEdges, callback); // noEdges is the priority. so, 5 edges will be added here form priority 1 to 5
+          noEdges -= 1;
+        }
+      , function(error) {
+          if(error) return done(error);
+          ref.on('edge_added', { startAt: startAt } ,function(error, edgeRef, edgeSnap) {
+            var i;
+            if((i = edges.indexOf(edgeSnap.name())) > -1) {
+              edges.splice(i, 1);
+              if(!edges.length) {
+                done();
+              }
+            } else {
+              done('wrong edges are returning.');
+            }
+          });
+      })
+    })
+    
+    it("edges: with filters: endAt: should only get edges with certain priorities", function(done) {
+      this.timeout(20000);
+      var ref = Appbase.ns('misc').v(Appbase.uuid());
+      refs[2] = ref;
+      var edges = [];
+      var endAt = 3;
+      var noEdges = 5;
+      async.whilst(function() { return noEdges;}, 
+        function(callback) {
+          var edgeName = Appbase.uuid();
+          if(noEdges <= endAt) {
+            edges.push(edgeName);
+          }
+          ref.setEdge(edgeName, noEdges, callback); // noEdges is the priority. so, 5 edges will be added here form priority 1 to 5
+          noEdges -= 1;
+        }
+      , function(error) {
+          if(error) return done(error);
+          ref.on('edge_added', { endAt: endAt } ,function(error, edgeRef, edgeSnap) {
+            var i;
+            if((i = edges.indexOf(edgeSnap.name())) > -1) {
+              edges.splice(i, 1);
+              if(!edges.length) {
+                done();
+              }
+            } else {
+              done('wrong edges are returning.');
+            }
+          });
+      })
+    })
+    
+    it("edges: with filters: limit: should only get limited no. of edges", function(done) {
+      this.timeout(20000);
+      var ref = Appbase.ns('misc').v(Appbase.uuid());
+      refs[2] = ref;
+      var limit = 3;
+      var noEdges = 5;
+      async.whilst(function() { return noEdges;}, 
+        function(callback) {
+          var edgeName = Appbase.uuid();
+          ref.setEdge(edgeName, callback); // noEdges is the priority. so, 5 edges will be added here form priority 1 to 5
+          noEdges -= 1;
+        }
+      , function(error) {
+          if(error) return done(error);
+          var i = 0;
+          ref.on('edge_added', { limit: limit } ,function(error, edgeRef, edgeSnap) {
+            i+=1;
+            console.log(i);
+            if(i <= limit) {
+              if(i === limit) {
+                //wait for a 2 secs for any other edges to fire and then call done
+                setTimeout(done, 2000);
+              }
+              
+            } else {
+              done('more edges are returned than expected');
+            }
+          });
+      })
+    })
+    
+    it("edges: with filters: skip: should skip certain edges", function(done) {
+      this.timeout(20000);
+      var ref = Appbase.ns('misc').v(Appbase.uuid());
+      refs[2] = ref;
+      var edges = [];
+      var skip = 3;
+      var noEdges = 5;
+      var j = 0;
+      async.whilst(function() { return (noEdges - j);}, 
+        function(callback) {
+          j += 1;
+          var edgeName = Appbase.uuid();
+          if( j > skip) {
+            edges.push(edgeName);
+          }
+          ref.setEdge(edgeName, 0, callback);
+        }
+      , function(error) {
+          if(error) return done(error);
+          ref.on('edge_added', { startAt: 0, skip: skip } ,function(error, edgeRef, edgeSnap) {
+            var i;
+            if((i = edges.indexOf(edgeSnap.name())) > -1) {
+              edges.splice(i, 1);
+              if(!edges.length) {
+                done();
+              }
+            } else {
+              done('wrong edges are returning.');
+            }
+          });
+      })
+    })
+    
+  })
+  
+  
   
   !isNode && describe("unauth", function(){
     it('unauth: the request should fail after calling Appbase.unauth()', function(done) {

@@ -42,6 +42,10 @@ if(config.isWindow) {
         options = {}
       }
       options.cache = true
+      if(!options.authorize) {
+        options.authorize = {}
+      }
+      options.authorize.response_type = "code"
       var tB;
       if((tB = typeof cb) === 'function') {
         OAuth.popup(provider, options, ab.interface.auth.completeAuth(provider, cb))
@@ -120,8 +124,9 @@ ab.interface.ns = function(namespace) {
 }
 
 ab.interface.isValid = function(url, callback) {
-  ab.server.vertex.get(url, function(error, result) {
-    callback && callback(error !== null && error !== '101: Resource does not exist'? error : null, !(error && error === '101: Resource does not exist'))
+  ab.server.vertex.get(url, function(er, result) {
+    var error = (er !== null && er !== '101: Resource does not exist') ? er : null
+    callback && (error ? callback(error) : callback(null, er !== '101: Resource does not exist'))
   })
 }
 
@@ -157,7 +162,7 @@ ab.interface.create = function(path, onlyIfInvalid) {
 ab.interface.vertex = function(path) {
   var referenceID = ab.util.uuid()
 
-  var internalFunctions = {
+  var privateData = {
     onProperties: function(interfaceCallback) {
       if(ab.server.vertex.urlsListening[exports.URL()]) {
         if(ab.cache.timestamps[exports.URL()] && ab.cache.timestamps[exports.URL()]['vertex']) { //fire only the timestamp exists- the data is arrived from server
@@ -180,22 +185,38 @@ ab.interface.vertex = function(path) {
         })
       }
     },
-    onEdges: function(event, interfaceCallback) {
-      if(ab.server.edges.urlsListening[exports.URL()]) {
-        if(event == "edge_added")
-          setTimeout(function() {
-            ab.firing.prepareForEdges('RETR', exports.URL(), {},
-              ab.cache.get('edges', exports.URL()), interfaceCallback)
-          },0)
+    onEdges: function(event, filters, interfaceCallback) {
+      var reqData = {
+        filters: filters
+      }, proceed = function() {
+        delete filters.onlyNew
+        privateData.filterString = ab.util.generateFilterString(reqData)
+        if(ab.server.edges.urlsListening[exports.URL() + privateData.filterString]) {
+          if(event == "edge_added")
+            setTimeout(function() {
+              ab.firing.prepareForEdges('RETR', exports.URL() + privateData.filterString, {},
+                ab.cache.get('edges', exports.URL() + privateData.filterString), interfaceCallback)
+            },0)
+        }
+        amplify.subscribe(event+":"+exports.URL() + privateData.filterString, referenceID, interfaceCallback)
+        if(!ab.server.edges.urlsListening[exports.URL() + privateData.filterString]) {
+          ab.server.edges.listen(exports.URL(), reqData, function(error, request) {
+            if(error) {
+              interfaceCallback(error)
+              amplify.unsubscribe(event+":"+exports.URL() + privateData.filterString, referenceID)
+            }
+          })
+        }
       }
-      amplify.subscribe(event+":"+exports.URL(), referenceID, interfaceCallback)
-      if(!ab.server.edges.urlsListening[exports.URL()]) {
-        ab.server.edges.listen(exports.URL(), {"filters": {}}, function(error, request) {
-          if(error) {
-            interfaceCallback(error)
-            amplify.unsubscribe(event+":"+exports.URL(), referenceID)
-          }
+      
+      if(filters.onlyNew) {
+        ab.server.timestamp(function(error, timestamp) {
+          if(error) return interfaceCallback(error)
+          reqData.timestamp = timestamp
+          proceed()
         })
+      } else {
+        proceed()
       }
     }
   }
@@ -224,17 +245,30 @@ ab.interface.vertex = function(path) {
     return new ab.interface.vertex(path.slice(0, path.lastIndexOf('/')))
   }
 
-  exports.on = function(event, callback) {
-    if(!(typeof event === "string" && typeof callback === "function"))
-      throw  "Invalid arguments."
-
+  exports.on = function(event, options, callback) {
+    if(arguments.length === 3) {
+      if(!(typeof event === "string" && event !== 'properties' 
+           && typeof options === 'object' && typeof callback === "function")) {
+        throw "Invalid arguments for 'on()'"
+      }
+    } else if(arguments.length === 2) {
+      if(!(typeof event === "string" && typeof options === "function"))
+        throw  "Invalid arguments for 'on()'"
+      else {
+        var callback = options
+        options = {}
+      }
+    } else {
+      throw  "Invalid arguments for 'on()'"
+    }
+    
     var checkForCreationAndGoAhead = function() {
       if(ab.cache.newVertices[path]) {
-        setTimeout(checkForCreationAndGoAhead,200)
+        setTimeout(checkForCreationAndGoAhead, 200)
       } else {
         if(event == 'properties')
-          internalFunctions.onProperties(callback)
-        else internalFunctions.onEdges(event, callback)
+          privateData.onProperties(callback)
+        else privateData.onEdges(event, options, callback)
       }
     }
     checkForCreationAndGoAhead()
@@ -244,28 +278,32 @@ ab.interface.vertex = function(path) {
     if(event) {
       amplify.unsubscribe(event + ":" + exports.URL(), referenceID)
       if(event === "properties" && amplify.subscriptionCount("properties:"+exports.URL()) === 0) {
-        //Commenting out: in order to keep data live in the cache. ab.server.vertex.unlisten(exports.URL())
+        //Commenting out: in order to keep data live in the cache. 
+        //ab.server.vertex.unlisten(exports.URL())
       }
 
-      if(event !== "properties" && amplify.subscriptionCount("edge_added:"+exports.URL()) === 0
-       && amplify.subscriptionCount("edge_removed:"+exports.URL()) === 0
-       && amplify.subscriptionCount("edge_changed:"+exports.URL()) === 0) {
-        //Commenting out: in order to keep data live in the cache. ab.server.edges.unlisten(exports.URL())
+      if(event !== "properties" && amplify.subscriptionCount("edge_added:"+exports.URL()+privateData.filterString) === 0
+       && amplify.subscriptionCount("edge_removed:"+exports.URL()+privateData.filterString) === 0
+       && amplify.subscriptionCount("edge_changed:"+exports.URL()+privateData.filterString) === 0) {
+        //Commenting out: in order to keep data live in the cache.
+        //ab.server.edges.unlisten(exports.URL()+privateData.filterString)
       }
     } else {
       amplify.unsubscribe("properties:" + exports.URL(), referenceID)
-      amplify.unsubscribe("edge_added:" + exports.URL(), referenceID)
-      amplify.unsubscribe("edge_removed:" + exports.URL(), referenceID)
-      amplify.unsubscribe("edge_changed:" + exports.URL(), referenceID)
+      amplify.unsubscribe("edge_added:" + exports.URL()+privateData.filterString, referenceID)
+      amplify.unsubscribe("edge_removed:" + exports.URL()+privateData.filterString, referenceID)
+      amplify.unsubscribe("edge_changed:" + exports.URL()+privateData.filterString, referenceID)
 
       if(amplify.subscriptionCount("properties:"+exports.URL()) === 0) {
-        //Commenting out: in order to keep data live in the cache. ab.server.vertex.unlisten(exports.URL())
+        //Commenting out: in order to keep data live in the cache. 
+        //ab.server.vertex.unlisten(exports.URL())
       }
 
-      if(amplify.subscriptionCount("edge_added:"+exports.URL()) === 0
-       && amplify.subscriptionCount("edge_removed:"+exports.URL()) === 0
-       && amplify.subscriptionCount("edge_changed:"+exports.URL()) === 0) {
-        //Commenting out: in order to keep data live in the cache. ab.server.edges.unlisten(exports.URL())
+      if(amplify.subscriptionCount("edge_added:"+exports.URL()+privateData.filterString) === 0
+       && amplify.subscriptionCount("edge_removed:"+exports.URL()+privateData.filterString) === 0
+       && amplify.subscriptionCount("edge_changed:"+exports.URL()+privateData.filterString) === 0) {
+        //Commenting out: in order to keep data live in the cache.
+        //ab.server.edges.unlisten(exports.URL()+privateData.filterString)
       }
     }
   }

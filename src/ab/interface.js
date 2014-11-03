@@ -438,7 +438,11 @@ ab.interface.vertex = function(path) {
 
   exports.setEdge = function(name, ref, priority, callback) {
     //dealing with optional arguments
-    if(arguments.length === 2) {
+    if(arguments.length === 1) {
+      if(!(typeof name === 'string')) {
+        throw "Invalid Arguments for setEdge."
+      }
+    } else if(arguments.length === 2) {
       if(typeof ref === 'number') {
         var priority = ref
         ref = undefined

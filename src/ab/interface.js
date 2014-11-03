@@ -80,35 +80,46 @@ ab.interface.ns = function(namespace) {
     return namespace
   }
 
-  exports.v = function(vPath) {
-    var path = namespace + '/' + ab.util.cutLeadingTrailingSlashes(vPath)
+  exports.v = function() {
+    var validArgs = ab.inputHandling.doIt(arguments, [{name: 'path', type: 'vPath'}]);
+    if(validArgs.error) throw validArgs.error;
+    
+    var path = namespace + '/' + ab.util.cutLeadingTrailingSlashes(validArgs.path)
     ab.interface.create(path, true)
     return ab.interface.vertex(path)
   }
   exports.search = function(query, cb) {
     ab.server.search(namespace, query, cb)
   }
-  exports.on = function(event, interfaceCallback) {
+  exports.on = function() {
+    var validArgs = ab.inputHandling.doIt(arguments, [{name: 'event', type: 'nsEvent'}, {name: 'callback', type: 'function'}]);
+    if(validArgs.error) throw validArgs.error;
+    
     if(ab.server.ns.namespacesListening[exports.URL()]) {
-      if(event === "vertex_added")
+      if(validArgs.event === "vertex_added")
         setTimeout(function() {
-          ab.firing.prepareForNS('RETR', exports.URL(), {}, ab.cache.get('edges', exports.URL()), interfaceCallback)
+          ab.firing.prepareForNS('RETR', exports.URL(), {}, ab.cache.get('edges', exports.URL()), validArgs.callback)
         },0)
     }
-    amplify.subscribe(event+":"+exports.URL(), referenceID, interfaceCallback)
+    amplify.subscribe(validArgs.event+":"+exports.URL(), referenceID, validArgs.callback)
     if(!ab.server.ns.namespacesListening[exports.URL()]) {
       ab.server.ns.listen(exports.URL(), {"filters": {}}, function(error, request) {
         if(error) {
-          interfaceCallback(error)
-          amplify.unsubscribe(event+":"+exports.URL(), referenceID)
+          if(validArgs.callback) 
+            validArgs.callback(error)
+          else throw error
+          amplify.unsubscribe(validArgs.event+":"+exports.URL(), referenceID)
         }
       })
     }
   }
 
   exports.off = function(event) {
-    if(event) {
-      amplify.unsubscribe(event + ":" + exports.URL(), referenceID)
+    var validArgs = ab.inputHandling.doIt(arguments, [{name: 'event', type: 'nsEvent', optional: true}]);
+    if(validArgs.error) throw validArgs.error;
+    
+    if(validArgs.event) {
+      amplify.unsubscribe(validArgs.event + ":" + exports.URL(), referenceID)
     } else {
       amplify.unsubscribe("vertex_added:" + exports.URL(), referenceID)
       amplify.unsubscribe("vertex_destroyed:" + exports.URL(), referenceID)
@@ -274,7 +285,11 @@ ab.interface.vertex = function(path) {
     checkForCreationAndGoAhead()
   }
 
-  exports.off = function(event) {
+  exports.off = function() {
+    var validArgs = ab.inputHandling.doIt(arguments, [{name: 'event', type: 'vEvent', optional: true}]);
+    if(validArgs.error) throw validArgs.error;
+    var event = validArgs.event;
+    
     if(event) {
       amplify.unsubscribe(event + ":" + exports.URL(), referenceID)
       if(event === "properties" && amplify.subscriptionCount("properties:"+exports.URL()) === 0) {
@@ -308,28 +323,34 @@ ab.interface.vertex = function(path) {
     }
   }
 
-  exports.isValid = function(callback) {
+  exports.isValid = function() {
+    var validArgs = ab.inputHandling.doIt(arguments, [{name: 'callback', type: 'function'}]);
+    if(validArgs.error) throw validArgs.error;
+    
     var checkForCreationAndGoAhead = function() {
       if(ab.cache.newVertices[path]) {
         setTimeout(checkForCreationAndGoAhead,200)
       } else {
-        ab.interface.isValid(exports.URL(), callback)
+        ab.interface.isValid(exports.URL(), validArgs.callback)
       }
     }
     checkForCreationAndGoAhead()
   }
 
-  exports.setData = function(data, callback) {
+  exports.setData = function() {
+    var validArgs = ab.inputHandling.doIt(arguments, [{name: 'data', type: 'object'}, {name: 'callback', type: 'function', optional: true}]);
+    if(validArgs.error) throw validArgs.error;
+    
     var checkForCreationAndGoAhead = function() {
       if(ab.cache.newVertices[path]) {
         setTimeout(checkForCreationAndGoAhead,200)
       } else {
-        ab.server.vertex.set(exports.URL(), data, function(error, result) {
+        ab.server.vertex.set(exports.URL(), validArgs.data, function(error, result) {
           if(!error)
-            callback && callback(error, exports)
+            validArgs.callback && validArgs.callback(error, exports)
           else {
-            if(callback)
-              callback(error)
+            if(validArgs.callback)
+              validArgs.callback(error)
             else
               throw error
           }
@@ -361,9 +382,9 @@ ab.interface.vertex = function(path) {
           }
           if(typeof newData !== 'object') {
             if(cb)
-              cb("The function must return an oject.", exports)
+              cb("The 'apply' function must return an oject.", exports)
             else
-              throw "The function must return an oject."
+              throw "The 'apply' function must return an oject."
           } else {
             ab.server.vertex.set(exports.URL(), newData, function(error, result) {
               if(!error){

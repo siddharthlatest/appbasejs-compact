@@ -6,5 +6,5 @@ ab.cache = require("./cache.js");
 ab.server = require("./server.js");
 ab.util = require("./util.js");
 ab.firing = require("./firing.js");
-
+ab.inputHandling = require('./input-handling.js');
 module.exports = ab;

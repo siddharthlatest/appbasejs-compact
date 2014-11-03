@@ -409,26 +409,26 @@ ab.interface.vertex = function(path) {
     commit(1)
   }
 
-  exports.removeData = function(data, callback) {
-    if(typeof data === "boolean") {
-      if(data) {
-        var all = data
-        data = undefined
-      } else {
-        throw "data can't be `false`."
-      }
+  exports.removeData = function() {
+    var validArgs = ab.inputHandling.doIt(arguments, [{name: 'propertyName', type: 'pNameOrArray'}, {name: 'callback', type: 'function', optional: true}]);
+    if(validArgs.error) throw validArgs.error;
+    var data;
+    if(validArgs.propertyName instanceof Array) {
+      data = validArgs.propertyName
+    } else {
+      data = [validArgs.propertyName]
     }
 
     var checkForCreationAndGoAhead = function() {
       if(ab.cache.newVertices[path]) {
         setTimeout(checkForCreationAndGoAhead,200)
       } else {
-        ab.server.vertex.delete(exports.URL(), {data:data, all:all}, function(error) {
+        ab.server.vertex.delete(exports.URL(), {data: data}, function(error) {
           if(!error)
-            callback && callback(error, exports)
+            validArgs.callback && validArgs.callback(error, exports)
           else {
-            if(callback)
-              callback(error)
+            if(validArgs.callback)
+              validArgs.callback(error)
             else
               throw error
           }
@@ -481,7 +481,7 @@ ab.interface.vertex = function(path) {
             validArgs.callback && validArgs.callback(error, exports, validArgs.vRef)
           } else {
             if(validArgs.callback)
-              callback(validArgs.error)
+              validArgs.callback(error)
             else
               throw error
           }
@@ -491,15 +491,21 @@ ab.interface.vertex = function(path) {
     checkForCreationAndGoAhead()
   }
 
-  exports.removeEdge = function(edgeName, callback) {
-    var validArgs = ab.inputHandling.doIt(arguments, [{name: 'edgeName', type: 'eName'}, {name: 'callback', type: 'function', optional: true}]);
+  exports.removeEdge = function() {
+    var validArgs = ab.inputHandling.doIt(arguments, [{name: 'edgeName', type: 'eNameOrArray'}, {name: 'callback', type: 'function', optional: true}]);
     if(validArgs.error) throw validArgs.error;
+    var data;
+    if(validArgs.edgeName instanceof Array) {
+      data = validArgs.edgeName
+    } else {
+      data = [validArgs.edgeName]
+    }
     
     var checkForCreationAndGoAhead = function() {
       if(ab.cache.newVertices[path]) {
         setTimeout(checkForCreationAndGoAhead, 200)
       } else {
-        ab.server.edges.delete(exports.URL(), {data:[validArgs.edgeName]}, function(error, result) {
+        ab.server.edges.delete(exports.URL(), {data: data}, function(error, result) {
           if(!error) {
             validArgs.callback && validArgs.callback(error, exports)
           } else {

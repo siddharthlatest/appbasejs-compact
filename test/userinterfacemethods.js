@@ -165,7 +165,7 @@ describe('interface methods', function() {
     var ref
     it("setData should not throw an error, return the proper reference", function(done){
       ref = Appbase.ns(namespace).v(key)
-      var data = {"color":"brown"}
+      var data = {"color":"brown", "abc": "pqr", "asd": "lsd"}
       async.waterfall([
         function(callback) {
           ref.setData(data, callback)
@@ -179,11 +179,10 @@ describe('interface methods', function() {
         }
       })
     })
-    it("removeData- some properties- should not throw an error, return the proper reference",function(done){
-      var data = ["color"]
+    it("removeData- one property- should not throw an error, return the proper reference",function(done){
       async.waterfall([
         function(callback) {
-          ref.removeData(data, callback)
+          ref.removeData("color", callback)
         }
       ], function(err, ref) {
         if(err)
@@ -194,10 +193,10 @@ describe('interface methods', function() {
         }
       })
     })
-    it("removeData- all- should not throw an error, return the proper reference", function(done) {
+    it("removeData- multiple properties- should not throw an error, return the proper reference", function(done) {
       async.waterfall([
         function(callback) {
-          ref.removeData(true, callback)
+          ref.removeData(['abc', 'asd'], callback)
         }
       ], function(err, ref) {
         if(err)
@@ -342,6 +341,22 @@ describe('interface methods', function() {
       async.waterfall([
         function(callback) {
           ref.removeEdge("theNameIsRock", callback)
+        }
+      ], function(err, ref) {
+        if(err)
+          done(err)
+        else {
+          expect(ref.path()).to.equal(path)
+          done()
+        }
+      })
+    })
+    
+    it("removeEdge- with array - should not throw an error, return the proper reference",function(done){
+      var edgeRef = Appbase.ns(edgeNamespace).v(edgeKey)
+      async.waterfall([
+        function(callback) {
+          ref.removeEdge(["theNameIsUndeadRokr"], callback)
         }
       ], function(err, ref) {
         if(err)
@@ -513,7 +528,7 @@ describe('interface methods', function() {
       })
     })
     
-    it("edges: with filters: limit: should only get limited no. of edges", function(done) {
+    it.skip("edges: with filters: limit: should only get limited no. of edges", function(done) {
       this.timeout(20000);
       var ref = Appbase.ns('misc').v(Appbase.uuid());
       refs[2] = ref;
@@ -544,7 +559,7 @@ describe('interface methods', function() {
       })
     })
     
-    it("edges: with filters: skip: should skip certain edges", function(done) {
+    it.skip("edges: with filters: skip: should skip certain edges", function(done) {
       this.timeout(20000);
       var ref = Appbase.ns('misc').v(Appbase.uuid());
       refs[2] = ref;

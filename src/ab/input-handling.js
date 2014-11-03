@@ -5,6 +5,13 @@ ab.inputHandling = {};
 //checks for the type of the arguments. Returns undefined if no error, otherwise returns the string which represents the desired input
 var isInputErrornous = function(input, desired) {
   switch(desired) {
+    case "alphaNumUnder": 
+      var pattern = new RegExp("^[a-zA-Z0-9_]*$");
+      if(!(typeof input === "string" && input !== "" && pattern.test(input))) {
+        return "an alphanumeric string with underscores";
+      }
+      break;
+      
     case "nsRef":
       if(!(typeof input === "object" && input.isNS)) {
         return "an appbase namespace reference";
@@ -26,24 +33,51 @@ var isInputErrornous = function(input, desired) {
     
     case "vKey":
       input = ab.util.cutLeadingTrailingSlashes(input);
-      var pattern = new RegExp("^[a-zA-Z0-9_]*$");
-      if(!(typeof input === "string" && input !== "" && pattern.test(input))) {
-        return "a vertex key - an alphanumeric string with underscores";
+      var e = isInputErrornous(input, 'alphaNumUnder');
+      if(e) return 'a vertex key - ' + e;
+      break;
+      
+    case "pName":
+      var e = isInputErrornous(input, 'alphaNumUnder');
+      if(e) return 'a property name - ' + e;
+      break;
+      
+    case "pNameOrArray": 
+      var msg = 'a property name - an alphanumeric string with underscores, or an array of property names';
+      var error;
+      if(input instanceof Array) {
+        input.forEach(function(pName) {
+          error = error || isInputErrornous(pName, 'pName');
+        });
+        if(error) {
+          return msg;
+        }
+      } else if(isInputErrornous(input, 'pName')) {
+        return msg;
       }
       break;
       
     case "eName":
-      var pattern = new RegExp("^[a-zA-Z0-9_]*$");
-      if(!(typeof input === "string" && input !== "" && pattern.test(input))) {
-        return "an edge name - an alphanumeric string with underscores";
+      var e = isInputErrornous(input, 'alphaNumUnder');
+      if(e) return 'an edge name - ' + e;
+      break;
+      
+    case "eNameOrArray": 
+      var msg = 'an edge name - an alphanumeric string with underscores, or an array of edge names';
+      var error;
+      if(input instanceof Array) {
+        input.forEach(function(eName) {
+          error = error || isInputErrornous(eName, 'eName');
+        });
+        if(error) return msg;
+      } else if(isInputErrornous(input, 'eName')) {
+        return msg;
       }
       break;
       
     case "ns":
-      var pattern = new RegExp("^[a-zA-Z0-9_]*$");
-      if(!(typeof input === "string" && input !== "" && pattern.test(input))) {
-        return "a namespace identifier - an alphanumeric string with underscores";
-      }
+      var e = isInputErrornous(input, 'alphaNumUnder');
+      if(e) return 'a namespace identifier - ' + e;
       break;
       
     case "vEvent":
@@ -82,10 +116,8 @@ var isInputErrornous = function(input, desired) {
       break;
       
     case "app":
-      var pattern = new RegExp("^[a-zA-Z0-9_]*$");
-      if(!(typeof input === "string" && input !== "" && pattern.test(input))) {
-        return "application name - an alphanumeric string with underscores";
-      }
+      var e = isInputErrornous(input, 'alphaNumUnder');
+      if(e) return 'application name - ' + e;
       break;
       
     case "secret":

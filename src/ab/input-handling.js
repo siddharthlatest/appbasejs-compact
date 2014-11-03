@@ -32,6 +32,13 @@ var isInputErrornous = function(input, desired) {
       }
       break;
       
+    case "eName":
+      var pattern = new RegExp("^[a-zA-Z0-9_]*$");
+      if(!(typeof input === "string" && input !== "" && pattern.test(input))) {
+        return "an edge name - an alphanumeric string with underscores";
+      }
+      break;
+      
     case "ns":
       var pattern = new RegExp("^[a-zA-Z0-9_]*$");
       if(!(typeof input === "string" && input !== "" && pattern.test(input))) {
@@ -52,7 +59,7 @@ var isInputErrornous = function(input, desired) {
       break;
       
     case "eFilters":
-      if(!(typeof input === "object")) {
+      if(typeof input === "object") {
         if(!(typeof input.startAt === 'number' || typeof input.startAt === 'undefined'))
           return "edge filters - an object with 'startAt' as a number";
         if(!(typeof input.endAt === 'number' || typeof input.endAt === 'undefined'))
@@ -63,6 +70,8 @@ var isInputErrornous = function(input, desired) {
           return "edge filters - an object with 'skip' as a number";
         if(!(typeof input.onlyNew === 'boolean' || typeof input.onlyNew === 'undefined'))
           return "edge filters - an object with 'onlyNew' as a boolean";
+      } else {
+        return "edge filters - an object";
       }
       break;
       

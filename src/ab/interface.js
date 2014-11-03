@@ -33,14 +33,12 @@ if(config.isWindow) {
         }
       }
     },
-    callback: function(provider, cb) {
-      OAuth.callback(provider, ab.interface.auth.completeAuth(provider, cb))
+    callback: function() {
+      var validArgs = ab.inputHandling.doIt(arguments, [{name: 'provider', type: 'provider'}, {name: 'callback', type: 'function'}]);
+      if(validArgs.error) throw validArgs.error;
+      OAuth.callback(validArgs.provider, ab.interface.auth.completeAuth(validArgs.provider, validArgs.callback))
     },
     auth: function(provider, options, cb) {
-      if((typeof options) !== 'object') {
-        var cb = options
-        options = {}
-      }
       options.cache = true
       if(!options.authorize) {
         options.authorize = {}
@@ -54,6 +52,16 @@ if(config.isWindow) {
       } else {
         throw ("Invalid argument:" + cb.toString())
       }
+    },
+    authPopup: function() {
+      var validArgs = ab.inputHandling.doIt(arguments, [{name: 'provider', type: 'provider'}, {name: 'options', type: 'object', optional:true, defaultVal: {}}, {name: 'callback', type: 'function'}]);
+      if(validArgs.error) throw validArgs.error;
+      ab.interface.auth.auth(validArgs.provider, validArgs.options, validArgs.callback);
+    },
+    authRedirect: function() {
+      var validArgs = ab.inputHandling.doIt(arguments, [{name: 'provider', type: 'provider'}, {name: 'options', type: 'object', optional:true, defaultVal: {}}, {name: 'redirectURL', type: 'string'}]);
+      if(validArgs.error) throw validArgs.error;
+      ab.interface.auth.auth(validArgs.provider, validArgs.options, validArgs.redirectURL);
     },
     unauth: function() {
       ab.auth.unauth();
@@ -248,38 +256,27 @@ ab.interface.vertex = function(path) {
     return path
   }
 
-  exports.outVertex = function(edgeName) {
-    return new ab.interface.vertex(path+'/'+edgeName)
+  exports.outVertex = function() {
+    var validArgs = ab.inputHandling.doIt(arguments, [{name: 'edgeName', type: 'eName'}]);
+    if(validArgs.error) throw validArgs.error;
+    return new ab.interface.vertex(path+'/'+validArgs.edgeName)
   }
 
   exports.inVertex = function() {
     return new ab.interface.vertex(path.slice(0, path.lastIndexOf('/')))
   }
 
-  exports.on = function(event, options, callback) {
-    if(arguments.length === 3) {
-      if(!(typeof event === "string" && event !== 'properties' 
-           && typeof options === 'object' && typeof callback === "function")) {
-        throw "Invalid arguments for 'on()'"
-      }
-    } else if(arguments.length === 2) {
-      if(!(typeof event === "string" && typeof options === "function"))
-        throw  "Invalid arguments for 'on()'"
-      else {
-        var callback = options
-        options = {}
-      }
-    } else {
-      throw  "Invalid arguments for 'on()'"
-    }
+  exports.on = function() {
+    var validArgs = ab.inputHandling.doIt(arguments, [{name: 'event', type: 'vEvent'}, {name: 'filters', type: 'eFilters', optional: true, defaultVal: {}}, {name: 'callback', type: 'function'}]);
+    if(validArgs.error) throw validArgs.error;
     
     var checkForCreationAndGoAhead = function() {
       if(ab.cache.newVertices[path]) {
         setTimeout(checkForCreationAndGoAhead, 200)
       } else {
-        if(event == 'properties')
-          privateData.onProperties(callback)
-        else privateData.onEdges(event, options, callback)
+        if(validArgs.event == 'properties')
+          privateData.onProperties(validArgs.callback)
+        else privateData.onEdges(validArgs.event, validArgs.filters, validArgs.callback)
       }
     }
     checkForCreationAndGoAhead()
@@ -360,7 +357,11 @@ ab.interface.vertex = function(path) {
     checkForCreationAndGoAhead()
   }
 
-  exports.commitData = function(apply, cb) {
+  exports.commitData = function() {
+    var validArgs = ab.inputHandling.doIt(arguments, [{name: 'apply', type: 'function'}, {name: 'callback', type: 'function', optional: true}]);
+    if(validArgs.error) throw validArgs.error;
+    
+    var cb = validArgs.callback;
     var commit = function(attempt) {
       var listenerFired;
       var dupRef = ab.interface.vertex(path)
@@ -373,7 +374,7 @@ ab.interface.vertex = function(path) {
           cb && cb(error, exports)
         } else {
           try {
-            var newData = apply(vSnap.properties())
+            var newData = validArgs.apply(vSnap.properties())
           } catch (e) {
             if(cb)
               cb(error, exports)
@@ -438,6 +439,9 @@ ab.interface.vertex = function(path) {
   }
 
   exports.destroy = function(callback) {
+    var validArgs = ab.inputHandling.doIt(arguments, [{name: 'callback', type: 'function', optional: true}]);
+    if(validArgs.error) throw validArgs.error;
+    
     var checkForCreationAndGoAhead = function() {
       if(ab.cache.newVertices[path]) {
         setTimeout(checkForCreationAndGoAhead,200)
@@ -457,56 +461,27 @@ ab.interface.vertex = function(path) {
     checkForCreationAndGoAhead()
   }
 
-  exports.setEdge = function(name, ref, priority, callback) {
-    //dealing with optional arguments
-    if(arguments.length === 1) {
-      if(!(typeof name === 'string')) {
-        throw "Invalid Arguments for setEdge."
-      }
-    } else if(arguments.length === 2) {
-      if(typeof ref === 'number') {
-        var priority = ref
-        ref = undefined
-      } else if (typeof ref === 'function') {
-        var callback = ref
-        ref = undefined
-      } else if(!(ref.isV)) {
-        throw "Invalid Arguments for setEdge."
-      }
-    } else if(arguments.length === 3) {
-      if(typeof ref === 'number' && typeof priority === 'function') {
-        var callback = priority
-        var priority  = ref
-        ref = undefined
-      } else if (typeof ref.path === 'function' && typeof priority === 'function') {
-        var callback = priority
-        priority = undefined
-      } else if(!(ref.isV && typeof priority === 'number')) {
-        throw "Invalid Arguments for setEdge."
-      }
-    } else if(!(arguments.length === 4 && typeof ref.path === 'function' && typeof priority === 'number' && typeof callback === 'function')) {
-      throw "Invalid Arguments for setEdge."
-    }
+  exports.setEdge = function() {
+    var validArgs = ab.inputHandling.doIt(arguments, [{name: 'edgeName', type: 'eName'}, {name: 'vRef', type: 'vRef', optional: true}, {name: 'priority', type: 'number', optional: true, defaultVal: null}, {name: 'callback', type: 'function', optional: true}]);
+    if(validArgs.error) throw validArgs.error;
 
     var data = {}
 
-    var ref = ref
-
-    data[name] = {
-      path: ref? ref.path() : (ref = ab.interface.create('misc/'+ ab.util.uuid())).path(),
-      order: priority === undefined? null:priority
+    data[validArgs.edgeName] = {
+      path: validArgs.vRef? validArgs.vRef.path() : (validArgs.vRef = ab.interface.create('misc/'+ ab.util.uuid())).path(),
+      order: validArgs.priority
     }
 
     var checkForCreationAndGoAhead = function() {
-      if(ab.cache.newVertices[path] || ab.cache.newVertices[ref.path()]) {
+      if(ab.cache.newVertices[path] || ab.cache.newVertices[validArgs.vRef.path()]) {
         setTimeout(checkForCreationAndGoAhead,200)
       } else {
         ab.server.edges.set(exports.URL(), data, function(error, result) {
           if(!error) {
-            callback && callback(error, exports, ref)
+            validArgs.callback && validArgs.callback(error, exports, validArgs.vRef)
           } else {
-            if(callback)
-              callback(error)
+            if(validArgs.callback)
+              callback(validArgs.error)
             else
               throw error
           }
@@ -517,16 +492,19 @@ ab.interface.vertex = function(path) {
   }
 
   exports.removeEdge = function(edgeName, callback) {
+    var validArgs = ab.inputHandling.doIt(arguments, [{name: 'edgeName', type: 'eName'}, {name: 'callback', type: 'function', optional: true}]);
+    if(validArgs.error) throw validArgs.error;
+    
     var checkForCreationAndGoAhead = function() {
       if(ab.cache.newVertices[path]) {
         setTimeout(checkForCreationAndGoAhead, 200)
       } else {
-        ab.server.edges.delete(exports.URL(), {data:[edgeName]}, function(error, result) {
+        ab.server.edges.delete(exports.URL(), {data:[validArgs.edgeName]}, function(error, result) {
           if(!error) {
-            callback && callback(error, exports)
+            validArgs.callback && validArgs.callback(error, exports)
           } else {
-            if(callback)
-              callback(error)
+            if(validArgs.callback)
+              validArgs.callback(error)
             else
               throw error
           }

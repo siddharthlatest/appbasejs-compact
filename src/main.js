@@ -3,8 +3,8 @@ var ab = require("./ab/");
 
 var Appbase = {};
 if(config.isWindow) { //do not expose auth in Node
-  Appbase.authPopup = ab.interface.auth.auth;
-  Appbase.authRedirect = ab.interface.auth.auth;
+  Appbase.authPopup = ab.interface.auth.authPopup;
+  Appbase.authRedirect = ab.interface.auth.authRedirect;
   Appbase.authCallback = ab.interface.auth.callback;
   Appbase.unauth = ab.interface.auth.unauth;
 }
@@ -17,7 +17,7 @@ Appbase.credentials = function() {
   config.isWindow && ab.auth.initOauthio(validArgs.appName);
   ab.server.setApp(validArgs.appName);
   var randomRef = Appbase.ns(Appbase.uuid()).v(Appbase.uuid());
-  validArgs.callback && ab.interface.isValid(randomRef.URL(), function(er, isValid) {
+  validArgs.callback !== undefined && ab.interface.isValid(randomRef.URL(), function(er, isValid) {
     var error = (er !== null && (er !== '021: Invalid secret key' && er !== '022: Invalid secret key')) ? er : null // Invalid secret key is not a n error in this case
     error = error ? error : (isValid? 'Unexpected result from server while checking for credentials.' : null) // isValid should ALWAYS be false, for UUID vertex
     error? validArgs.callback(error) : validArgs.callback(null, (er !== '021: Invalid secret key' && er !== '022: Invalid secret key'))

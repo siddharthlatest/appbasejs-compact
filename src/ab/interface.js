@@ -263,6 +263,7 @@ ab.interface.vertex = function(path) {
   }
 
   exports.inVertex = function() {
+    if(path.split('/').length < 3) throw "This vertex has no inVertex."
     return new ab.interface.vertex(path.slice(0, path.lastIndexOf('/')))
   }
 

@@ -130,11 +130,11 @@ ab.interface.ns = function(namespace) {
       amplify.unsubscribe(validArgs.event + ":" + exports.URL(), referenceID)
     } else {
       amplify.unsubscribe("vertex_added:" + exports.URL(), referenceID)
-      amplify.unsubscribe("vertex_destroyed:" + exports.URL(), referenceID)
+      amplify.unsubscribe("vertex_removed:" + exports.URL(), referenceID)
     }
 
     if(amplify.subscriptionCount("vertex_added:"+exports.URL()) === 0
-      && amplify.subscriptionCount("vertex_destroyed:"+exports.URL()) === 0) {
+      && amplify.subscriptionCount("vertex_removed:"+exports.URL()) === 0) {
       //Commenting out: in order to keep data live in the cache. ab.server.ns.unlisten(exports.URL())
     }
   }

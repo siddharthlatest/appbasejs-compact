@@ -87,7 +87,7 @@ var isInputErrornous = function(input, desired) {
       break;
 
     case "nsEvent":
-      if(!(typeof input === "string" && input !== "" && (input === "vertex_added" || input === "vertex_destroyed"))) {
+      if(!(typeof input === "string" && input !== "" && (input === "vertex_added" || input === "vertex_removed"))) {
         return "a namespace event";
       }
       break;

@@ -37,7 +37,7 @@ ab.firing = {
       case "DESTROY":
         for(var pKey in current) {
           if(previous[pKey] !== undefined)
-            ab.firing.fireForNS(url, "vertex_destroyed", previous[pKey], callback)
+            ab.firing.fireForNS(url, "vertex_removed", previous[pKey], callback)
         }
         break
       default :

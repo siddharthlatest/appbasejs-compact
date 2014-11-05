@@ -12,7 +12,7 @@ Appbase.credentials = function() {
   var validArgs = ab.inputHandling.doIt(arguments, [{name: 'appName', type: 'app'}, {name: 'appSecret', type: 'secret', optional: true}, {name: 'callback', type: 'function', optional: true}]);
   if(validArgs.error) throw validArgs.error;
   
-  ab.server.setBaseURL(config.appbaseApiServer + '/'+ validArgs.appName +'/v2');
+  ab.server.setBaseURL(config.appbaseApiServer + '/'+ validArgs.appName +'/v' + config.version);
   ab.server.setAppSecret(validArgs.appSecret); // TODO: Use server method to set secret
   config.isWindow && ab.auth.initOauthio(validArgs.appName);
   ab.server.setApp(validArgs.appName);

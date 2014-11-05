@@ -7,6 +7,9 @@ var atomic = {};
 (function() {
   var parse = function (req) {
     var result;
+    if (req.status === 204) 
+        result = '101: Resource does not exist';
+    else 
     try {
       result = JSON.parse(req.responseText);
     } catch (e) {
@@ -26,7 +29,7 @@ var atomic = {};
     request.setRequestHeader('Content-type', 'application/json');
     request.onreadystatechange = function () {
       if (request.readyState === 4) {
-        if (request.status >= 200 && request.status < 300) {
+        if (request.status === 200) {
           methods.success.apply(methods, parse(request));
         } else {
           methods.error.apply(methods, parse(request));

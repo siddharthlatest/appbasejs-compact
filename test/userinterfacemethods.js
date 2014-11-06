@@ -79,13 +79,18 @@ describe('interface methods', function() {
       
       Appbase.authCallback(provider, callback)         
     })
+        
+    it('getAuth: after authRedirect, it should return proper credentials and userid', function() {
+      checkCreds(Appbase.getAuth());
+    })
     
-    it('unauth: the request should fail after calling Appbase.unauth()', function(done) {
+    it('unauth: after authRedirect, the request should fail after calling Appbase.unauth()', function(done) {
       Appbase.unauth()
       Appbase.ns('tweet').search({text:'hello', properties: ['msg']},function(err, array) {
         expect(err).to.equal("024: No app token specified")
         done()
       })
+      expect(Appbase.getAuth()).to.be.null;
     })
     
     it('authPopup: it should open a popup and return proper credentials and userid', function(done) {
@@ -98,6 +103,10 @@ describe('interface methods', function() {
       }
       
       Appbase.authPopup(provider, {authorize: {scope: ['openid']}}, callback)
+    })
+    
+    it('getAuth: after authPopup, it should return proper credentials and userid', function() {
+      checkCreds(Appbase.getAuth());
     })
   })
 
@@ -597,12 +606,13 @@ describe('interface methods', function() {
   
   
   !isNode && describe("unauth", function(){
-    it('unauth: the request should fail after calling Appbase.unauth()', function(done) {
+    it('unauth: after authPopup, the request should fail after calling Appbase.unauth()', function(done) {
       Appbase.unauth()
       Appbase.ns('tweet').search({text:'hello', properties: ['msg']},function(err, array) {
         expect(err).to.equal("024: No app token specified")
         done()
       })
+      expect(Appbase.getAuth()).to.be.null;
     })
   })
 })

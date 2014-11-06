@@ -5,6 +5,10 @@ ab.interface = {};
 if(config.isWindow) {
   var OAuth = require("./oauthio.js");
   ab.interface.auth = {
+    getAuth: function() {
+      var authObj = ab.auth.restoreCreds();
+      return authObj === null? null : {authObj: authObj, requestObj: ab.auth.credsToRequetObj(authObj)};
+    },
     completeAuth: function(provider, cb) {
       return function(error, providerResponse) {
         if(error) {

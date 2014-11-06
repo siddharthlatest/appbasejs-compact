@@ -3,7 +3,7 @@ var ab = require("./ab/");
 
 var Appbase = {};
 if(config.isWindow) { //do not expose auth in Node
-  Appbase.getAuth = ab.auth.restoreCreds;
+  Appbase.getAuth = ab.interface.auth.getAuth;
   Appbase.authPopup = ab.interface.auth.authPopup;
   Appbase.authRedirect = ab.interface.auth.authRedirect;
   Appbase.authCallback = ab.interface.auth.callback;

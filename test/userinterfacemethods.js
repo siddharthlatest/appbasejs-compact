@@ -81,7 +81,9 @@ describe('interface methods', function() {
     })
         
     it('getAuth: after authRedirect, it should return proper credentials and userid', function() {
-      checkCreds(Appbase.getAuth());
+      var auth = Appbase.getAuth();
+      expect(auth).to.not.be.null;
+      auth && checkCreds(auth.authObj);
     })
     
     it('unauth: after authRedirect, the request should fail after calling Appbase.unauth()', function(done) {
@@ -106,7 +108,9 @@ describe('interface methods', function() {
     })
     
     it('getAuth: after authPopup, it should return proper credentials and userid', function() {
-      checkCreds(Appbase.getAuth());
+      var auth = Appbase.getAuth();
+      expect(auth).to.not.be.null;
+      auth && checkCreds(auth.authObj);
     })
   })
 

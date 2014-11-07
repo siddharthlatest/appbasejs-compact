@@ -152,22 +152,26 @@ describe('interface methods', function() {
   })
 
   describe('paths', function() {
-    var path = "Materials/Wood"
-    var namespace = "Materials"
-    var key = "Wood"
-    var ref
-    it("should return  ref's path path", function() {
-      ref = Appbase.ns(namespace).v(key)
-      expect(ref.path()).to.equal(path)
+    var namespace = "Materials";
+    var key = "Wood";
+    var path = namespace + '/' + key;
+    var nsRef = Appbase.ns(namespace);
+    var ref = nsRef.v(key);
+    it("should return ref's path", function() {
+      expect(ref.path()).to.equal(path);
+    })
+    it("should return name of the vertex/namespace", function() {
+      expect(ref.name()).to.equal(key);
+      expect(nsRef.name()).to.equal(namespace);
     })
     it("should return outVertex's ref", function() {
-      var edgeName = 'outV'
-      expect(ref.outVertex(edgeName).path()).to.equal(path+'/'+edgeName)
+      var edgeName = 'outV';
+      expect(ref.outVertex(edgeName).path()).to.equal(path+'/'+edgeName);
     })
     it("should return inVertex's ref", function() {
-      var edgeName = 'outV'
-      var outVRef = ref.outVertex(edgeName)
-      expect(outVRef.inVertex().path()).to.equal(path)
+      var edgeName = 'outV';
+      var outVRef = ref.outVertex(edgeName);
+      expect(outVRef.inVertex().path()).to.equal(path);
     })
   })
 
@@ -219,6 +223,31 @@ describe('interface methods', function() {
           done()
         }
       })
+    })
+    
+    it("once: should fire properties only once", function(done) {
+      async.waterfall([
+        function(callback) {
+          var fired;
+          ref.once('properties', function(error, vRef, vSnap) {
+            if(error) throw callback(error);
+            if(fired) {
+              done("Fired more than once");
+            } else {
+              fired = true;
+              setTimeout(done, 2000); //wait for 2 secs to be fired again
+            }
+            callback();
+             
+          })
+        }, 
+        function(callback) {
+          //changing the proerties and see if it fires
+          ref.setData({"lol": "lala"}, callback);
+        }
+      ], function(error) {
+        if(error) done(error);
+      });
     })
   })
 

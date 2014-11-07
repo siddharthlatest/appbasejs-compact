@@ -85,6 +85,12 @@ var isInputErrornous = function(input, desired) {
         return "a vertex event";
       }
       break;
+      
+    case "vEventProperties":
+      if(!(typeof input === "string" && input !== "" && (input === "properties"))) {
+        return "vertex 'properties' event";
+      }
+      break;
 
     case "nsEvent":
       if(!(typeof input === "string" && input !== "" && (input === "vertex_added" || input === "vertex_removed"))) {

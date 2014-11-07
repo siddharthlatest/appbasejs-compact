@@ -91,6 +91,10 @@ ab.interface.ns = function(namespace) {
   exports.path = function() {
     return namespace
   }
+  
+  exports.name = function() {
+    return namespace
+  }
 
   exports.v = function() {
     var validArgs = ab.inputHandling.doIt(arguments, [{name: 'path', type: 'vPath'}]);
@@ -257,13 +261,17 @@ ab.interface.vertex = function(path) {
   }
 
   exports.path = function() {
-    return path
+    return path;
+  }
+  
+  exports.name = function() {
+    return path.slice(path.lastIndexOf('/') + 1);
   }
 
   exports.outVertex = function() {
     var validArgs = ab.inputHandling.doIt(arguments, [{name: 'edgeName', type: 'eName'}]);
     if(validArgs.error) throw validArgs.error;
-    return new ab.interface.vertex(path+'/'+validArgs.edgeName)
+    return new ab.interface.vertex(path+'/'+validArgs.edgeName);
   }
 
   exports.inVertex = function() {
@@ -285,6 +293,19 @@ ab.interface.vertex = function(path) {
       }
     }
     checkForCreationAndGoAhead()
+  }
+  
+  exports.once = function() {
+    var validArgs = ab.inputHandling.doIt(arguments, [{name: 'event', type: 'vEventProperties'}, {name: 'filters', type: 'eFilters', optional: true, defaultVal: {}}, {name: 'callback', type: 'function'}]);
+    if(validArgs.error) throw validArgs.error;
+    
+    //creating a duplicate ref to listen on, so that 'once' listeners don't collide with 'on' listeners.
+    var dupRef = ab.interface.vertex(path);
+    var newCallback = function() {
+      dupRef.off(validArgs.event);
+      validArgs.callback.apply(validArgs.callback, arguments);
+    }
+    dupRef.on(validArgs.event, newCallback);
   }
 
   exports.off = function() {

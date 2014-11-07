@@ -61,7 +61,7 @@ ab.server.ns = {
     ab.server.realtime.socket.on(event, listener = function(result) {
       if(typeof result === 'string') {
         delete ab.server.edges.urlsListening[url]
-        if(result === 'STOPPED'){
+        if(result === 'STOPPED') {
           ab.server.realtime.socket.removeListener(event,listener)
           return
         }
@@ -75,12 +75,27 @@ ab.server.ns = {
           if(result[0] !== undefined) { //array of vertices
             var previous = ab.cache.get('edges', url)
             var newVertices = {}
+            var presentVertices = {};
             result.forEach(function(v) {
-              var pKey = v.rootPath.slice(v.rootPath.indexOf('/') + 1)
-              newVertices[pKey] = v
+              var pKey = v.rootPath.slice(v.rootPath.indexOf('/') + 1);
+              presentVertices[pKey] = true;
+              if (!previous[pKey])
+                newVertices[pKey] = v;
             })
-            ab.cache.set('edges', url, newVertices)
-            ab.firing.prepareForNS('RETR', url, previous, newVertices)
+            
+            ab.cache.set('edges', url, newVertices);
+            ab.firing.prepareForNS('RETR', url, previous, newVertices);
+            
+            // removing vertices not present in 'result'
+            for(var pKey in previous) {
+              if(!presentVertices[pKey]) {
+                ab.cache.remove('edges', url, [pKey]);
+                var removeObj = {
+                  pKey: true
+                };
+                ab.firing.prepareForNS('DESTROY', url, previous, removeObj);
+              }
+            }
           } else { // single vertex
             var v = result.vertex
             var pKey = v.rootPath ? v.rootPath.slice(v.rootPath.indexOf('/') + 1) : undefined

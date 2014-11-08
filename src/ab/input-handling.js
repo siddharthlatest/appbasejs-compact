@@ -6,7 +6,7 @@ ab.inputHandling = {};
 var isInputErrornous = function(input, desired) {
   switch(desired) {
     case "alphaNumUnder": 
-      var pattern = new RegExp("^[a-zA-Z0-9_]*$");
+      var pattern = new RegExp("^[a-zA-Z0-9_\-]*$");
       if(!(typeof input === "string" && input !== "" && pattern.test(input))) {
         return "an alphanumeric string with underscores";
       }

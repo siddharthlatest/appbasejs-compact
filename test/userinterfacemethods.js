@@ -571,7 +571,7 @@ describe('interface methods', function() {
       })
     })
     
-    it.skip("edges: with filters: limit: should only get limited no. of edges", function(done) {
+    it("edges: with filters: limit: should only get limited no. of edges", function(done) {
       this.timeout(20000);
       var ref = Appbase.ns('misc').v(Appbase.uuid());
       refs[2] = ref;

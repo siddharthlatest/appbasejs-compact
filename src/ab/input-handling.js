@@ -6,9 +6,16 @@ ab.inputHandling = {};
 var isInputErrornous = function(input, desired) {
   switch(desired) {
     case "alphaNumUnder": 
-      var pattern = new RegExp("^[a-zA-Z0-9_\-]*$");
+      var pattern = new RegExp("^[a-zA-Z0-9_]*$");
       if(!(typeof input === "string" && input !== "" && pattern.test(input))) {
         return "an alphanumeric string with underscores";
+      }
+      break;
+      
+    case "asciiExcept3": // all ascii, including extended, except '/', '~' and ':'
+      var pattern = new RegExp("^([\x00-\x2E]|[\x30-\x39]|[\x3B-\x7D]|[\x7F-\xFF])*$");
+      if(!(typeof input === "string" && input !== "" && pattern.test(input))) {
+        return "an ascii string except '/', '~' and ':' characters";
       }
       break;
       
@@ -25,64 +32,63 @@ var isInputErrornous = function(input, desired) {
     
     case "vPath":
       input = ab.util.cutLeadingTrailingSlashes(input);
-      var pattern = new RegExp("^[a-zA-Z0-9_\/]*$");
+      var pattern = new RegExp("^([\x00-\x39]|[\x3B-\x7D]|[\x7F-\xFF])*$"); // all ascii, including extended, except '~' and ':'
       if(!(typeof input === "string" && input !== "" && pattern.test(input))) {
-        return "a vertex path - an alphanumeric string with underscores and slashes";
+        return "a vertex path - an ascii string except '~' and ':' characters";
       }
       break;
     
     case "vKey":
       input = ab.util.cutLeadingTrailingSlashes(input);
-      var e = isInputErrornous(input, 'alphaNumUnder');
+      var e = isInputErrornous(input, 'asciiExcept3');
       if(e) return 'a vertex key - ' + e;
       break;
       
     case "pName":
-      var e = isInputErrornous(input, 'alphaNumUnder');
-      if(e) return 'a property name - ' + e;
+      if(!(typeof input === "string" && input !== "")) {
+        'a property name - a unicode string';
+      }
       break;
       
     case "pNameOrArray": 
-      var msg = 'a property name - an alphanumeric string with underscores, or an array of property names';
+      var msg = '; or an array of property names';
       var error;
       if(input instanceof Array) {
         input.forEach(function(pName) {
           error = error || isInputErrornous(pName, 'pName');
         });
-        if(error) {
-          return msg;
-        }
-      } else if(isInputErrornous(input, 'pName')) {
-        return msg;
+      } else {
+        error = isInputErrornous(input, 'pName');
       }
+      if(error) return error + msg;
       break;
       
     case "eName":
-      var e = isInputErrornous(input, 'alphaNumUnder');
+      var e = isInputErrornous(input, 'asciiExcept3');
       if(e) return 'an edge name - ' + e;
       break;
       
     case "eNameOrArray": 
-      var msg = 'an edge name - an alphanumeric string with underscores, or an array of edge names';
+      var msg = '; or an array of edge names';
       var error;
       if(input instanceof Array) {
         input.forEach(function(eName) {
           error = error || isInputErrornous(eName, 'eName');
         });
-        if(error) return msg;
-      } else if(isInputErrornous(input, 'eName')) {
-        return msg;
+      } else {
+        error = isInputErrornous(input, 'eName');
       }
+      if(error) return error + msg;
       break;
       
     case "ns":
-      var e = isInputErrornous(input, 'alphaNumUnder');
+      var e = isInputErrornous(input, 'asciiExcept3');
       if(e) return 'a namespace identifier - ' + e;
       break;
       
     case "vEvent":
       if(!(typeof input === "string" && input !== "" && (input === "edge_added" || input === "edge_removed" || input === "edge_changed" || input === "properties"))) {
-        return "a vertex event";
+        return "a vertex event - 'properties', 'edge_added', 'edge_removed' or 'edge_changed'";
       }
       break;
       
@@ -94,7 +100,7 @@ var isInputErrornous = function(input, desired) {
 
     case "nsEvent":
       if(!(typeof input === "string" && input !== "" && (input === "vertex_added" || input === "vertex_removed"))) {
-        return "a namespace event";
+        return "a namespace event - 'vertex_added' or 'vertex_removed'";
       }
       break;
       
@@ -122,12 +128,14 @@ var isInputErrornous = function(input, desired) {
       break;
       
     case "app":
-      var e = isInputErrornous(input, 'alphaNumUnder');
-      if(e) return 'application name - ' + e;
+      var pattern = new RegExp("^[a-z0-9_]*$");
+      if(!(typeof input === "string" && input !== "" && pattern.test(input))) {
+        return "application name - a lower case alphanumeric string with underscores";
+      }
       break;
       
     case "secret":
-      var pattern = new RegExp("^[a-zA-Z0-9_]*$");
+      var pattern = new RegExp("^[a-zA-Z0-9]*$");
       if(!(typeof input === "string" && input !== "" && pattern.test(input))) {
         return "application secret - an alphanumeric string";
       }
@@ -150,7 +158,7 @@ ab.inputHandling.doIt = function(args, desiredArgs) {
   var errorOccured;
   
   var generateErrorMessage = function() {
-    var msg = "Expected Arguments: ";
+    var msg = "Unexpected arguments provided. Expected: ";
     desiredArgs.forEach(function(desired, i) {
       msg += desired.name + (argTypes[i] || desired.optional ? ' (' + (desired.optional? 'optional' : '') + (argTypes[i]? (desired.optional? ' - ' : '') + argTypes[i]: '') + ')' : '');
       

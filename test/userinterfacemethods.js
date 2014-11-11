@@ -156,8 +156,9 @@ describe('interface methods', function() {
     var key = "Wood";
     var path = namespace + '/' + key;
     var nsRef = Appbase.ns(namespace);
-    var ref = nsRef.v(key);
+    var ref;
     it("should return ref's path", function() {
+      ref = nsRef.v(key);
       expect(ref.path()).to.equal(path);
     })
     it("should return name of the vertex/namespace", function() {

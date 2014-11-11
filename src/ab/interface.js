@@ -7,40 +7,16 @@ if(config.isWindow) {
   ab.interface.auth = {
     getAuth: function() {
       var authObj = ab.auth.restoreCreds();
-      return authObj === null? null : {authObj: authObj, requestObj: ab.auth.credsToRequetObj(authObj)};
-    },
-    completeAuth: function(provider, cb) {
-      return function(error, providerResponse) {
-        if(error) {
-          ab.auth.unauth();
-          cb(error)
-          return
-        }
-        var savedCreds = ab.auth.restoreCreds()
-        //TODO: check for code, provider
-        if(savedCreds && (Date.now()/1000 < ((savedCreds.credentials.appbase.expires_in) + savedCreds.credentials.appbase.generated_at))) {
-          ab.server.setAppbaseToken(savedCreds.credentials.appbase.access_token)
-          cb(null, savedCreds, ab.auth.credsToRequetObj(savedCreds))
-        } else {
-          ab.auth.saveCreds(null)
-          ab.auth.codeToCreds(provider, providerResponse.code, function(error, creds) {
-            if(error) {
-              ab.auth.unauth();
-              return cb(error)
-            }
-            creds.credentials.appbase.generated_at = (Date.now()/1000) - 2 //assuming network latency 2 secs
-            creds.credentials.provider.generated_at = creds.credentials.appbase.generated_at
-            ab.auth.saveCreds(creds)
-            ab.server.setAppbaseToken(creds.credentials.appbase.access_token)
-            cb(null, creds, ab.auth.credsToRequetObj(creds))
-          })
-        }
+      if(authObj) {
+        ab.server.setAppbaseToken(authObj.credentials.appbase.access_token)
+        return {authObj: authObj, requestObj: ab.auth.credsToRequetObj(authObj)}; 
       }
+      return null;         
     },
     callback: function() {
       var validArgs = ab.inputHandling.doIt(arguments, [{name: 'provider', type: 'provider'}, {name: 'callback', type: 'function'}]);
       if(validArgs.error) throw validArgs.error;
-      OAuth.callback(validArgs.provider, ab.interface.auth.completeAuth(validArgs.provider, validArgs.callback))
+      OAuth.callback(validArgs.provider, ab.auth.completeAuth(validArgs.provider, validArgs.callback))
     },
     auth: function(provider, options, cb) {
       options.cache = true
@@ -50,7 +26,7 @@ if(config.isWindow) {
       options.authorize.response_type = "code"
       var tB;
       if((tB = typeof cb) === 'function') {
-        OAuth.popup(provider, options, ab.interface.auth.completeAuth(provider, cb))
+        OAuth.popup(provider, options, ab.auth.completeAuth(provider, cb))
       } else if (tB === 'string') {
         OAuth.redirect(provider, options, cb)
       } else {

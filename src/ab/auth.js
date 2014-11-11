@@ -12,6 +12,30 @@ ab.auth = {
     OAuth.initialize(app);
     OAuth.setOAuthdURL(ab.auth.config.oauthdURL);
   },
+  completeAuth: function(provider, cb) {
+    return function(error, providerResponse) {
+      if(error) {
+        ab.auth.unauth();
+        cb(error)
+        return
+      }
+      var savedCreds = ab.auth.restoreCreds()
+      //TODO: check for code, provider
+      if(savedCreds && (Date.now()/1000 < ((savedCreds.credentials.appbase.expires_in) + savedCreds.credentials.appbase.generated_at))) {
+        ab.server.setAppbaseToken(savedCreds.credentials.appbase.access_token)
+        cb(null, savedCreds, ab.auth.credsToRequetObj(savedCreds))
+      } else {
+        ab.auth.saveCreds(null)
+        ab.auth.codeToCreds(provider, providerResponse.code, function(error, creds) {
+          creds.credentials.appbase.generated_at = (Date.now()/1000) - 2 //assuming network latency 2 secs
+          creds.credentials.provider.generated_at = creds.credentials.appbase.generated_at
+          ab.auth.saveCreds(creds)
+          ab.server.setAppbaseToken(creds.credentials.appbase.access_token)
+          cb(null, creds, ab.auth.credsToRequetObj(creds))
+        })
+      }
+    }
+  },
   codeToCreds: function(provider, code, cb) {
     var data = {
       app: ab.server.getApp(),

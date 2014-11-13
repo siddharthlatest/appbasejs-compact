@@ -6,7 +6,6 @@ ab.firing = {
     ab.firing.fireForProperties(url, previous, current, callback)
   },
   prepareForEdges: function(optype, url, previous, current, callback) {
-    console.log('fire preparing:', url);
     switch(optype) {
       case "REMOVE ALL":
         for(var edgeName in previous) {
@@ -64,7 +63,6 @@ ab.firing = {
     }
   },
   fireForEdges: function(url, event, previous, current, edgeName, callback) {
-    console.log('firing:', url);
     var edgeSnapshot = ab.util.createEdgeSnapshot(previous, current, edgeName)
     if(typeof callback == 'function') {
       callback(null, ab.interface.vertex(ab.util.URLToPath(url)+'/'+edgeName), edgeSnapshot)

@@ -13,8 +13,6 @@ var amplify;
       if ( typeof topic !== "string" ) {
         throw new Error( "You must provide a valid topic to publish." );
       }
-      
-      console.log('publishing', topic);
 
       var args = slice.call( arguments, 1 ),
        topicSubscriptions,
@@ -50,7 +48,6 @@ var amplify;
       if ( typeof topic !== "string" ) {
         throw new Error( "You must provide a valid topic to create a subscription." );
       }
-      console.log('subscribing', topic);
       if ( arguments.length === 2 ) {
         callback = name;
         name = uuid();
@@ -87,7 +84,6 @@ var amplify;
       return name;
     },
     unsubscribe: function( topic, name ) {
-      console.log('unsubscribing', topic);
       var turned_off;
       if ( typeof topic !== "string" ) {
         throw new Error( "You must provide a valid topic to remove a subscription." );

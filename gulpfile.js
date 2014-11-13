@@ -3,6 +3,8 @@ var browserify = require('browserify');
 var transform = require('vinyl-transform');
 var uglify = require('gulp-uglify');
 var rename = require('gulp-rename');
+var insert = require('gulp-insert');
+var package = require('./package.json');
 
 var browserified = transform(function(filename) {
   return browserify(filename)
@@ -11,6 +13,7 @@ var browserified = transform(function(filename) {
 
 var config = require('./src/config.js');
 config.browserBuild = true;
+config.versionString = "// Appbase Javascript Library v" + package.version + "\n";
 
 gulp.task('build', function () {
   config.src = "./src/browser_build.js";
@@ -20,6 +23,7 @@ gulp.task('build', function () {
     .pipe(browserified)
     .pipe(uglify())
     .pipe(rename(config.destFile))
+    .pipe(insert.prepend(config.versionString))
     .pipe(gulp.dest(config.dest));
 });
 
@@ -32,5 +36,6 @@ gulp.task('build_for_test',function() {
   return gulp.src([config.src])
     .pipe(browserified)
     .pipe(rename(config.destFile))
+    .pipe(insert.prepend(config.versionString))
     .pipe(gulp.dest(config.dest));
 });

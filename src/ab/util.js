@@ -84,7 +84,6 @@ ab.util = {
     return retObj;
   },
   generateFilterString: function(rData) {
-    console.log('generating', rData);
     var fString = ':filters-';
     if(rData && rData.filters) {
       fString += (rData.filters.startAt !== undefined) ? 'startAt=' + rData.filters.startAt + '.' : '';

@@ -68,7 +68,7 @@ ab.server.ns = {
         try {
           callback(new Error(result))
         } catch(e) {
-          console.error(url,e)
+          console.log("Error: ",url,e)
         }
       } else {
         try {
@@ -118,13 +118,13 @@ ab.server.ns = {
           }
 
         } catch(e) {
-          console.error(url,e)
+          console.log("Error: ",url,e)
         }
 
         try {
           callback(null, result)
         } catch(e) {
-          console.error(url,e)
+          console.log("Error: ",url,e)
         }
       }
     })
@@ -194,7 +194,7 @@ ab.server.vertex = {
         try {
           callback(new Error(result))
         } catch(e) {
-          console.error(url,e)
+          console.log("Error: ",url,e)
         }
       } else {
         var previous = ab.cache.get("vertex", url)
@@ -212,13 +212,13 @@ ab.server.vertex = {
         try{
           ab.firing.prepareForProperties(result.optype, url, previous, result.vertexCache)
         } catch(e) {
-          console.error(url,e)
+          console.log("Error: ",url,e)
         }
 
         try {
           callback(null, result)
         } catch(e) {
-          console.error(url,e)
+          console.log("Error: ",url,e)
         }
       }
     })
@@ -291,7 +291,6 @@ ab.server.edges = {
   listen: function(url, requestdata, callback) {
     var data = ab.util.parseURL(url)
     url += ab.util.generateFilterString(requestdata)
-    console.log('listening:', url);
     data["filters"] = requestdata.filters
     data["listener_id"] = ab.util.uuid()
     ab.util.setCredsInData(data)
@@ -299,7 +298,6 @@ ab.server.edges = {
     data.timestamp = requestdata.timestamp
     var listener
     ab.server.realtime.socket.on(event, listener = function(result) {
-      console.log('arrived:', url);
       if(typeof result === 'string') {
         delete ab.server.edges.urlsListening[url]
         if(result === 'STOPPED') {
@@ -309,7 +307,7 @@ ab.server.edges = {
         try {
           callback(new Error(result))
         } catch(e) {
-          console.error(url,e)
+          console.log("Error: ",url,e)
         }
       } else {
         var previous = ab.cache.get("edges", url)
@@ -333,13 +331,13 @@ ab.server.edges = {
               ab.firing.prepareForEdges(result.optype, url, previous, result.edges)
           }
         } catch(e) {
-          console.error(url,e)
+          console.log("Error: ",url,e)
         }
         result.edgeCache = ab.cache.get("edges", url)
         try {
           callback(null, result)
         } catch(e) {
-          console.error(url,e)
+          console.log("Error: ",url,e)
         }
       }
     })

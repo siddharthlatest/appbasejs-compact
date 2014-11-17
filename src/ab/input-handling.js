@@ -12,10 +12,11 @@ var isInputErrornous = function(input, desired) {
       }
       break;
       
-    case "asciiExcept3": // all ascii, including extended, except '/', '~' and ':'
-      var pattern = new RegExp("^([\x00-\x2E]|[\x30-\x39]|[\x3B-\x7D]|[\x7F-\xFF])*$");
-      if(!(typeof input === "string" && input !== "" && pattern.test(input))) {
-        return "an ascii string except '/', '~' and ':' characters";
+    case "charSupport":
+      var pattern = new RegExp("^([\x00-\xFF])*$"); // all ascii
+      var antiPattern = new RegExp("^([^,/?:@&=+$#~])+$");
+      if(!(typeof input === "string" && input !== "" && pattern.test(input) &&  antiPattern.test(input))) {
+        return "an ascii string except ',', '/', '?', ':', '@', '&', '=', '+', '$', '#', and '~' characters";
       }
       break;
       
@@ -32,15 +33,16 @@ var isInputErrornous = function(input, desired) {
     
     case "vPath":
       input = ab.util.cutLeadingTrailingSlashes(input);
-      var pattern = new RegExp("^([\x00-\x39]|[\x3B-\x7D]|[\x7F-\xFF])*$"); // all ascii, including extended, except '~' and ':'
+      var pattern = new RegExp("^([\x00-\xFF])*$"); // all ascii
+      var antiPattern = new RegExp("^([^,?:@&=+$#~])+$");
       if(!(typeof input === "string" && input !== "" && pattern.test(input))) {
-        return "a vertex path - an ascii string except '~' and ':' characters";
+        return "an ascii string except ',', '?', ':', '@', '&', '=', '+', '$', '#', and '~' characters";
       }
       break;
     
     case "vKey":
       input = ab.util.cutLeadingTrailingSlashes(input);
-      var e = isInputErrornous(input, 'asciiExcept3');
+      var e = isInputErrornous(input, 'charSupport');
       if(e) return 'a vertex key - ' + e;
       break;
       
@@ -64,7 +66,7 @@ var isInputErrornous = function(input, desired) {
       break;
       
     case "eName":
-      var e = isInputErrornous(input, 'asciiExcept3');
+      var e = isInputErrornous(input, 'charSupport');
       if(e) return 'an edge name - ' + e;
       break;
       
@@ -82,7 +84,7 @@ var isInputErrornous = function(input, desired) {
       break;
       
     case "ns":
-      var e = isInputErrornous(input, 'asciiExcept3');
+      var e = isInputErrornous(input, 'charSupport');
       if(e) return 'a namespace identifier - ' + e;
       break;
       

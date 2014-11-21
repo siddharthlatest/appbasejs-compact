@@ -158,7 +158,7 @@ ab.inputHandling.doIt = function(args, desiredArgs) {
   var errorOccured;
   
   var generateErrorMessage = function() {
-    var msg = "Unexpected arguments provided. Expected: ";
+    var msg = "Invalid arguments provided: " + Array.prototype.slice.call(args, 0).join(', ') + ". Valid Arguments are: ";
     desiredArgs.forEach(function(desired, i) {
       msg += desired.name + (argTypes[i] || desired.optional ? ' (' + (desired.optional? 'optional' : '') + (argTypes[i]? (desired.optional? ' - ' : '') + argTypes[i]: '') + ')' : '');
       

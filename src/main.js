@@ -37,4 +37,12 @@ Appbase.ns = function() {
 }
 Appbase.uuid = ab.util.uuid;
 
+Appbase.vRefModifier = function(method) {
+  ab.interface.referenceModifiers.v = method;
+}
+
+Appbase.nsRefModifier = function(method) {
+  ab.interface.referenceModifiers.ns = method;
+}
+
 module.exports = Appbase;

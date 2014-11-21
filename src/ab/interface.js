@@ -77,8 +77,8 @@ ab.interface.ns = function(namespace) {
     if(validArgs.error) throw validArgs.error;
     var objPath = ab.util.cutLeadingTrailingSlashes(validArgs.path);
     var path = namespace + '/' + objPath;
-    if(objPath.indexOf('/') === -1) ab.interface.create(path, true);
-    return ab.interface.vertex(path);
+    if(objPath.indexOf('/') === -1) return ab.interface.create(path, true, exports.isModified);
+    return ab.interface.vertex(path, exports.isModified);
   }
   exports.search = function(query, cb) {
     ab.server.search(namespace, query, cb)
@@ -122,6 +122,10 @@ ab.interface.ns = function(namespace) {
       //Commenting out: in order to keep data live in the cache. ab.server.ns.unlisten(exports.URL())
     }
   }
+  
+  if(ab.interface.referenceModifiers.ns) {
+    return ab.interface.referenceModifiers.ns(exports);
+  }
 
   return exports
 }
@@ -133,13 +137,13 @@ ab.interface.isValid = function(url, callback) {
   })
 }
 
-ab.interface.create = function(path, onlyIfInvalid) {
+ab.interface.create = function(path, onlyIfInvalid, modify) {
   if(!path) {
     throw 'Invalid arguments'
   }
 
   path = ab.util.cutLeadingTrailingSlashes(path)
-  var vRef = ab.interface.vertex(path)
+  var vRef = ab.interface.vertex(path, modify)
   ab.cache.newVertices[path] = true
   var proceed = function () {
     ab.server.vertex.set(ab.util.pathToURL(path), {}, function(error, result) {
@@ -162,7 +166,7 @@ ab.interface.create = function(path, onlyIfInvalid) {
   return vRef
 }
 
-ab.interface.vertex = function(path) {
+ab.interface.vertex = function(path, modify) {
   var referenceID = ab.util.uuid()
 
   var privateData = {
@@ -247,17 +251,28 @@ ab.interface.vertex = function(path) {
   exports.outVertex = function() {
     var validArgs = ab.inputHandling.doIt(arguments, [{name: 'edgeName', type: 'eName'}]);
     if(validArgs.error) throw validArgs.error;
-    return new ab.interface.vertex(path+'/'+validArgs.edgeName);
+    return new ab.interface.vertex(path+'/'+validArgs.edgeName, exports.isModified);
   }
 
   exports.inVertex = function() {
     if(path.split('/').length < 3) throw "This vertex has no inVertex."
-    return new ab.interface.vertex(path.slice(0, path.lastIndexOf('/')))
+    return new ab.interface.vertex(path.slice(0, path.lastIndexOf('/')), exports.isModified)
   }
 
   exports.on = function() {
     var validArgs = ab.inputHandling.doIt(arguments, [{name: 'event', type: 'vEvent'}, {name: 'filters', type: 'eFilters', optional: true, defaultVal: {}}, {name: 'callback', type: 'function'}]);
     if(validArgs.error) throw validArgs.error;
+    
+    if(exports.isModified) {
+      var originalCallback = validArgs.callback;
+      validArgs.callback = function() {
+        var ref = arguments[1];
+        if(ref) {
+          arguments[1] = ab.interface.referenceModifiers.v(ref);
+        }
+        originalCallback.apply(null, arguments);
+      }
+    }
     
     var checkForCreationAndGoAhead = function() {
       if(ab.cache.newVertices[path]) {
@@ -276,7 +291,7 @@ ab.interface.vertex = function(path) {
     if(validArgs.error) throw validArgs.error;
     
     //creating a duplicate ref to listen on, so that 'once' listeners don't collide with 'on' listeners.
-    var dupRef = ab.interface.vertex(path);
+    var dupRef = ab.interface.vertex(path, exports.isModified);
     var newCallback = function() {
       dupRef.off(validArgs.event);
       validArgs.callback.apply(validArgs.callback, arguments);
@@ -470,7 +485,7 @@ ab.interface.vertex = function(path) {
     var data = {}
 
     data[validArgs.edgeName] = {
-      path: validArgs.vRef? validArgs.vRef.path() : (validArgs.vRef = ab.interface.create('misc/'+ ab.util.uuid())).path(),
+      path: validArgs.vRef? validArgs.vRef.path() : (validArgs.vRef = ab.interface.create('misc/'+ ab.util.uuid()), false, true).path(),
       order: validArgs.priority
     }
 
@@ -521,7 +536,14 @@ ab.interface.vertex = function(path) {
     }
     checkForCreationAndGoAhead()
   }
+  
+  if(modify && ab.interface.referenceModifiers.v) {
+    return ab.interface.referenceModifiers.v(exports);
+  }
+  
   return exports
 }
+
+ab.interface.referenceModifiers = {};
 
 module.exports = ab.interface;

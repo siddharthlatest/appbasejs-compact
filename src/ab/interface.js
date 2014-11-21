@@ -485,7 +485,7 @@ ab.interface.vertex = function(path, modify) {
     var data = {}
 
     data[validArgs.edgeName] = {
-      path: validArgs.vRef? validArgs.vRef.path() : (validArgs.vRef = ab.interface.create('misc/'+ ab.util.uuid()), false, true).path(),
+      path: validArgs.vRef? validArgs.vRef.path() : (validArgs.vRef = ab.interface.create('misc/'+ ab.util.uuid(), false, true)).path(),
       order: validArgs.priority
     }
 

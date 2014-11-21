@@ -75,10 +75,10 @@ ab.interface.ns = function(namespace) {
   exports.v = function() {
     var validArgs = ab.inputHandling.doIt(arguments, [{name: 'path', type: 'vPath'}]);
     if(validArgs.error) throw validArgs.error;
-    
-    var path = namespace + '/' + ab.util.cutLeadingTrailingSlashes(validArgs.path)
-    ab.interface.create(path, true)
-    return ab.interface.vertex(path)
+    var objPath = ab.util.cutLeadingTrailingSlashes(validArgs.path);
+    var path = namespace + '/' + objPath;
+    if(objPath.indexOf('/') === -1) ab.interface.create(path, true);
+    return ab.interface.vertex(path);
   }
   exports.search = function(query, cb) {
     ab.server.search(namespace, query, cb)

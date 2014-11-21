@@ -25,7 +25,7 @@ var atomic = {};
     };
     var XHR = XMLHttpRequest || ActiveXObject;
     var request = new XHR('MSXML2.XMLHTTP.3.0');
-    request.open(type, encodeURI(url), true);
+    request.open(type, url, true);
     request.setRequestHeader('Content-type', 'application/json');
     request.onreadystatechange = function () {
       if (request.readyState === 4) {

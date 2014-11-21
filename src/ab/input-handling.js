@@ -14,9 +14,9 @@ var isInputErrornous = function(input, desired) {
       
     case "charSupport":
       var pattern = new RegExp("^([\x00-\xFF])*$"); // all ascii
-      var antiPattern = new RegExp("^([^,/?:@&=+$#~\s])+$");
+      var antiPattern = new RegExp("^([^,/?:@&=+$#~])+$");
       if(!(typeof input === "string" && input !== "" && pattern.test(input) &&  antiPattern.test(input))) {
-        return "an ascii string except whitespaces, ',', '/', '?', ':', '@', '&', '=', '+', '$', '#', and '~' characters";
+        return "an ascii string except ',', '/', '?', ':', '@', '&', '=', '+', '$', '#', and '~' characters";
       }
       break;
       
@@ -34,9 +34,9 @@ var isInputErrornous = function(input, desired) {
     case "vPath":
       input = ab.util.cutLeadingTrailingSlashes(input);
       var pattern = new RegExp("^([\x00-\xFF])*$"); // all ascii
-      var antiPattern = new RegExp("^([^,?:@&=+$#~\s])+$");
+      var antiPattern = new RegExp("^([^,?:@&=+$#~])+$");
       if(!(typeof input === "string" && input !== "" && pattern.test(input))) {
-        return "an ascii string except whitespaces, ',', '?', ':', '@', '&', '=', '+', '$', '#', and '~' characters";
+        return "an ascii string except ',', '?', ':', '@', '&', '=', '+', '$', '#', and '~' characters";
       }
       break;
     

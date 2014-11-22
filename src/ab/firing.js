@@ -29,6 +29,7 @@ ab.firing = {
             ab.firing.fireForEdges(url, "edge_added", {}, current[edgeName],
              edgeName, callback)
         }
+        amplify.publish('onComplete:'+url)
     }
   },
   prepareForNS: function(optype, url, previous, current, callback) {
@@ -44,6 +45,7 @@ ab.firing = {
           if(previous[pKey] === undefined)
             ab.firing.fireForNS(url, "vertex_added", current[pKey], callback)
         }
+        amplify.publish('onComplete:'+url)
     }
   },
   fireForNS: function(url, event, v, callback) {

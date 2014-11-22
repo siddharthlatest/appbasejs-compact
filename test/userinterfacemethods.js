@@ -412,17 +412,19 @@ describe('interface methods', function() {
     })
   })
   
-  describe("Listen: edges with filters", function() {
+  describe("Listen: edges with-w/o filters", function() {
     var appName = 'aphrodite'
     var appSecret = "4d8d0072580912343cd74a09015cd217"
     Appbase.credentials(appName, appSecret)
     var refs = [];
-    it("edges: without filters: should get existing edges as well", function(done) {
+    it("edges: without filters: should get existing edges as well, onComplete should fire after that", function(done) {
       this.timeout(20000);
       var ref = Appbase.ns('misc').v(Appbase.uuid());
       refs[0] = ref;
       var edges = [];
       var noEdges = 5;
+      var onCompleteHasFired;
+      var onCompleteFiredMoreThanOnce;
       async.whilst(function() { return edges.length < 3;}, 
         function(callback) {
           var edgeName = Appbase.uuid();
@@ -437,11 +439,19 @@ describe('interface methods', function() {
               edges.splice(i, 1);
               noEdges -= 1;
               if(noEdges === 0) {
+                expect(onCompleteHasFired).to.be.ok;
+                expect(onCompleteFiredMoreThanOnce).to.not.be.ok;
                 done();
               }
             } else {
               done('wrong edges are returning.');
             }
+          }, function() { // onComplete
+            // should fire after 3 existing edges
+            expect(noEdges).to.equal(2);
+            if(onCompleteHasFired)
+              onCompleteFiredMoreThanOnce = true;
+            onCompleteHasFired = true;
           });
         
           //after started to listen, add 2 more edges
@@ -462,7 +472,7 @@ describe('interface methods', function() {
       })
     })
     
-    it("edges: with filters: onlyTrue: should get only new edges", function(done) {
+    it("edges: with filters: onlyNew:true - should get only new edges", function(done) {
       this.timeout(20000);
       var ref = Appbase.ns('misc').v(Appbase.uuid());
       refs[1] = ref;

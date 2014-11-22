@@ -84,7 +84,7 @@ ab.interface.ns = function(namespace) {
     ab.server.search(namespace, query, cb)
   }
   exports.on = function() {
-    var validArgs = ab.inputHandling.doIt(arguments, [{name: 'event', type: 'nsEvent'}, {name: 'callback', type: 'function'}]);
+    var validArgs = ab.inputHandling.doIt(arguments, [{name: 'event', type: 'nsEvent'}, {name: 'callback', type: 'function'}, {name: 'onComplete', type: 'function', optional: true}]);
     if(validArgs.error) throw validArgs.error;
     
     if(ab.server.ns.namespacesListening[exports.URL()]) {
@@ -94,13 +94,22 @@ ab.interface.ns = function(namespace) {
         },0)
     }
     amplify.subscribe(validArgs.event+":"+exports.URL(), referenceID, validArgs.callback)
+    if(validArgs.onComplete) {
+      amplify.subscribe("onComplete:"+exports.URL(), referenceID, function() {
+        amplify.unsubscribe("onComplete:"+exports.URL(), referenceID);
+        validArgs.onComplete.apply(null, arguments);
+      })
+    }
     if(!ab.server.ns.namespacesListening[exports.URL()]) {
       ab.server.ns.listen(exports.URL(), {"filters": {}}, function(error, request) {
         if(error) {
-          if(validArgs.callback) 
+          if(validArgs.callback)
             validArgs.callback(error)
           else throw error
           amplify.unsubscribe(validArgs.event+":"+exports.URL(), referenceID)
+          if(validArgs.onComplete) {
+            amplify.unsubscribe("onComplete:"+exports.URL(), referenceID)
+          }
         }
       })
     }
@@ -112,8 +121,12 @@ ab.interface.ns = function(namespace) {
     
     if(validArgs.event) {
       amplify.unsubscribe(validArgs.event + ":" + exports.URL(), referenceID)
+      if(validArgs.event === "vertex_added") {
+        amplify.unsubscribe("onComplete:" + exports.URL(), referenceID)
+      }
     } else {
       amplify.unsubscribe("vertex_added:" + exports.URL(), referenceID)
+      amplify.unsubscribe("onComplete:" + exports.URL(), referenceID)
       amplify.unsubscribe("vertex_removed:" + exports.URL(), referenceID)
     }
 
@@ -192,7 +205,7 @@ ab.interface.vertex = function(path, modify) {
         })
       }
     },
-    onEdges: function(event, filters, interfaceCallback) {
+    onEdges: function(event, filters, interfaceCallback, onComplete) {
       var reqData = {
         filters: filters
       }, proceed = function() {
@@ -206,11 +219,22 @@ ab.interface.vertex = function(path, modify) {
             },0)
         }
         amplify.subscribe(event+":"+exports.URL() + privateData.filterString, referenceID, interfaceCallback)
+
+        if(onComplete) {
+          amplify.subscribe("onComplete:"+exports.URL() + privateData.filterString, referenceID, function() {
+            amplify.unsubscribe("onComplete:"+exports.URL() + privateData.filterString, referenceID);
+            onComplete.apply(null, arguments);
+          })
+        }
+    
         if(!ab.server.edges.urlsListening[exports.URL() + privateData.filterString]) {
           ab.server.edges.listen(exports.URL(), reqData, function(error, request) {
             if(error) {
               interfaceCallback(error)
               amplify.unsubscribe(event+":"+exports.URL() + privateData.filterString, referenceID)
+              if(onComplete) {
+                amplify.unsubscribe("onComplete:"+exports.URL() + privateData.filterString, referenceID)
+              }
             }
           })
         }
@@ -260,7 +284,7 @@ ab.interface.vertex = function(path, modify) {
   }
 
   exports.on = function() {
-    var validArgs = ab.inputHandling.doIt(arguments, [{name: 'event', type: 'vEvent'}, {name: 'filters', type: 'eFilters', optional: true, defaultVal: {}}, {name: 'callback', type: 'function'}]);
+    var validArgs = ab.inputHandling.doIt(arguments, [{name: 'event', type: 'vEvent'}, {name: 'filters', type: 'eFilters', optional: true, defaultVal: {}}, {name: 'callback', type: 'function'}, {name: 'onComplete', type: 'function', optional: true}]);
     if(validArgs.error) throw validArgs.error;
     
     if(exports.isModified) {
@@ -280,7 +304,7 @@ ab.interface.vertex = function(path, modify) {
       } else {
         if(validArgs.event == 'properties')
           privateData.onProperties(validArgs.callback)
-        else privateData.onEdges(validArgs.event, validArgs.filters, validArgs.callback)
+        else privateData.onEdges(validArgs.event, validArgs.filters, validArgs.callback, validArgs.onComplete)
       }
     }
     checkForCreationAndGoAhead()
@@ -310,6 +334,10 @@ ab.interface.vertex = function(path, modify) {
         //Commenting out: in order to keep data live in the cache. 
         //ab.server.vertex.unlisten(exports.URL())
       }
+      
+      if(event === "edge_changed") {
+        amplify.unsubscribe("onComplete:" + exports.URL()+privateData.filterString, referenceID)
+      }
 
       if(event !== "properties" && amplify.subscriptionCount("edge_added:"+exports.URL()+privateData.filterString) === 0
        && amplify.subscriptionCount("edge_removed:"+exports.URL()+privateData.filterString) === 0
@@ -320,6 +348,7 @@ ab.interface.vertex = function(path, modify) {
     } else {
       amplify.unsubscribe("properties:" + exports.URL(), referenceID)
       amplify.unsubscribe("edge_added:" + exports.URL()+privateData.filterString, referenceID)
+      amplify.unsubscribe("onComplete:" + exports.URL()+privateData.filterString, referenceID)
       amplify.unsubscribe("edge_removed:" + exports.URL()+privateData.filterString, referenceID)
       amplify.unsubscribe("edge_changed:" + exports.URL()+privateData.filterString, referenceID)
 

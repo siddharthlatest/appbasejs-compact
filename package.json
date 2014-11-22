@@ -1,5 +1,5 @@
 {
-  "version": "2.2.8",
+  "version": "2.2.9",
   "name": "appbasejs",
   "dependencies": {
     "socket.io-client": "~1.0.6",

@@ -10,6 +10,7 @@ var amplify;
     subscriptions = {};
   amplify = {
     publish: function( topic ) {
+      console.log('pub', arguments);
       if ( typeof topic !== "string" ) {
         throw new Error( "You must provide a valid topic to publish." );
       }

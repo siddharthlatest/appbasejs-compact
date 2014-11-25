@@ -446,9 +446,10 @@ describe('interface methods', function() {
             } else {
               done('wrong edges are returning.');
             }
-          }, function() { // onComplete
+          }, function(vRef) { // onComplete
             // should fire after 3 existing edges
             expect(noEdges).to.equal(2);
+            expect(vRef.name()).to.equal(ref.name());
             if(onCompleteHasFired)
               onCompleteFiredMoreThanOnce = true;
             onCompleteHasFired = true;

@@ -97,7 +97,7 @@ ab.interface.ns = function(namespace) {
     if(validArgs.onComplete) {
       amplify.subscribe("onComplete:"+exports.URL(), referenceID, function() {
         amplify.unsubscribe("onComplete:"+exports.URL(), referenceID);
-        validArgs.onComplete.apply(null, arguments);
+        validArgs.onComplete.apply(null, exports);
       })
     }
     if(!ab.server.ns.namespacesListening[exports.URL()]) {
@@ -223,7 +223,7 @@ ab.interface.vertex = function(path, modify) {
         if(onComplete) {
           amplify.subscribe("onComplete:"+exports.URL() + privateData.filterString, referenceID, function() {
             amplify.unsubscribe("onComplete:"+exports.URL() + privateData.filterString, referenceID);
-            onComplete.apply(null, arguments);
+            onComplete.apply(null, exports);
           })
         }
     

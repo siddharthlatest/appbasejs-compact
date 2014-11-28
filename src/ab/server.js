@@ -72,7 +72,7 @@ ab.server.ns = {
         }
       } else {
         try {
-          if(result[0] !== undefined) { //array of vertices
+          if(result instanceof Array) {
             var previous = ab.cache.get('edges', url)
             var newVertices = {}
             var presentVertices = {};

@@ -1,6 +1,6 @@
 # AppbaseJS
 JavaScript library for Appbase [Appbase.io](http://appbase.io)
-Current Version: 2.2.10
+Current Version: 2.2.11
 
 ## Get Appbase
 Node: `npm install appbasejs`

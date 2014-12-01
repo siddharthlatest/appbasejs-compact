@@ -81,7 +81,10 @@ ab.interface.ns = function(namespace) {
     return ab.interface.vertex(path, exports.isModified);
   }
   exports.search = function(query, cb) {
-    ab.server.search(namespace, query, cb)
+    var validArgs = ab.inputHandling.doIt(arguments, [{name: 'query', type: 'object'}, {name: 'callback', type: 'function'}]);
+    if(validArgs.error) throw validArgs.error;
+
+    ab.server.search(namespace, validArgs.query, validArgs.callback);
   }
   exports.on = function() {
     var validArgs = ab.inputHandling.doIt(arguments, [{name: 'event', type: 'nsEvent'}, {name: 'callback', type: 'function'}, {name: 'onComplete', type: 'function', optional: true}]);
@@ -97,7 +100,7 @@ ab.interface.ns = function(namespace) {
     if(validArgs.onComplete) {
       amplify.subscribe("onComplete:"+exports.URL(), referenceID, function() {
         amplify.unsubscribe("onComplete:"+exports.URL(), referenceID);
-        validArgs.onComplete.apply(null, exports);
+        validArgs.onComplete(exports);
       })
     }
     if(!ab.server.ns.namespacesListening[exports.URL()]) {
@@ -223,7 +226,7 @@ ab.interface.vertex = function(path, modify) {
         if(onComplete) {
           amplify.subscribe("onComplete:"+exports.URL() + privateData.filterString, referenceID, function() {
             amplify.unsubscribe("onComplete:"+exports.URL() + privateData.filterString, referenceID);
-            onComplete.apply(null, exports);
+            onComplete(exports);
           })
         }
     

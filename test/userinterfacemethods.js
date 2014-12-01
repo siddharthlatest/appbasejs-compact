@@ -114,13 +114,37 @@ describe('interface methods', function() {
     })
   })
 
-  describe('Appbase.ns().search', function() {
-    it('should not throw an error, and array shouldnt be empty', function(done) {
+  describe('search', function() {
+    it('Appbase.ns().search: should not throw an error, and array shouldnt be empty', function(done) {
       Appbase.ns('tweet').search({text:'hello', properties: ['msg']},function(err, array) {
         if(err)
           done(err)
         else {
           expect(array).to.have.length.above(0)
+          done()
+        }
+      })
+    })
+    it('Appbase.rawSearch: should return proper non empty object', function(done) {
+      Appbase.rawSearch({
+          "namespaces":["user", "tweet"],
+          "body": {
+              "query": {
+                   "multi_match": {
+                       "fields": ["msg", "name"],
+                       "query": "hello",
+                       "minimum_should_match": "75%",
+                       "fuzziness": "AUTO"
+                   }
+               }
+           }
+      }, function(err, response) {
+        if(err)
+          done(err)
+        else {
+          expect(response).to.be.ok;
+          expect(response.hits).to.be.ok;
+          expect(response.hits.hits).to.have.length.above(0);
           done()
         }
       })

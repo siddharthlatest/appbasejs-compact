@@ -23,6 +23,14 @@ Appbase.credentials = function() {
     error? validArgs.callback(error) : validArgs.callback(null, (er !== '021: Invalid secret key' && er !== '022: Invalid secret key'))
   });
 }
+
+Appbase.rawSearch = function() {
+  var validArgs = ab.inputHandling.doIt(arguments, [{name: 'query', type: 'object'}, {name: 'callback', type: 'function'}]);
+  if(validArgs.error) throw validArgs.error;
+  
+  ab.server.rawSearch(validArgs.query, validArgs.callback);
+}
+
 Appbase.serverTime = function() {
   var validArgs = ab.inputHandling.doIt(arguments, [{name: 'callback', type: 'function'}]);
   if(validArgs.error) throw validArgs.error;

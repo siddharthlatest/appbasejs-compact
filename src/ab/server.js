@@ -31,6 +31,22 @@ ab.server.realtime.socket.on('reconnect', function() {
   }
 })
 
+ab.server.rawSearch = function(query, callback) {
+  var data = {
+    "query": query
+  }
+  ab.util.setCredsInData(data)
+  atomic.post(ab.server.baseURL + '/~rawsearch', data)
+   .success(function(result) {
+     if(typeof result === 'string') {
+       callback(new Error(result))
+     } else {
+       callback(null, result)
+     }
+   })
+   .error(callback)
+}
+
 ab.server.search = function(namespace, query, callback) {
   var data = {
     "query": query

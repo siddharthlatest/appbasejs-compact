@@ -1,4 +1,5 @@
 var ab = require("./index.js");
+var config = require("./../config.js");
 ab.util = {
   setCredsInData: function(data) {
     if(ab.server.getAppSecret()) {
@@ -51,7 +52,7 @@ ab.util = {
   },
   URLToPath: function(URL) {
     var temp;
-    return URL.slice(0, (temp = URL.indexOf(':', 5)) !== -1 ? temp : undefined).replace(ab.server.baseURL + '/','');
+    return URL.slice(0, (temp = URL.indexOf(':', config.protocol.length + 1)) !== -1 ? temp : undefined).replace(ab.server.baseURL + '/','');
   },
   uuid: function() {
     return 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function(c) {

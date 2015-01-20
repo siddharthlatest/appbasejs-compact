@@ -228,13 +228,21 @@ ab.server.vertex = {
         try{
           ab.firing.prepareForProperties(result.optype, url, previous, result.vertexCache)
         } catch(e) {
-          console.log("Error: ",url,e)
+          try {
+            callback(e);
+          } catch(e) {
+            console.log("Error: ",url,e);
+          }
         }
 
         try {
-          callback(null, result)
+          callback(null, result);
         } catch(e) {
-          console.log("Error: ",url,e)
+          try {
+            callback(e);
+          } catch(e) {
+            console.log("Error: ",url,e);
+          }
         }
       }
     })

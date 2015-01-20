@@ -90,32 +90,61 @@ ab.interface.ns = function(namespace) {
     var validArgs = ab.inputHandling.doIt(arguments, [{name: 'event', type: 'nsEvent'}, {name: 'callback', type: 'function'}, {name: 'onComplete', type: 'function', optional: true}]);
     if(validArgs.error) throw validArgs.error;
     
-    if(ab.server.ns.namespacesListening[exports.URL()]) {
-      if(validArgs.event === "vertex_added")
-        setTimeout(function() {
-          ab.firing.prepareForNS('RETR', exports.URL(), {}, ab.cache.get('edges', exports.URL()), validArgs.callback)
-        },0)
-    }
-    amplify.subscribe(validArgs.event+":"+exports.URL(), referenceID, validArgs.callback)
-    if(validArgs.onComplete) {
-      amplify.subscribe("onComplete:"+exports.URL(), referenceID, function() {
-        amplify.unsubscribe("onComplete:"+exports.URL(), referenceID);
-        validArgs.onComplete(exports);
-      })
-    }
-    if(!ab.server.ns.namespacesListening[exports.URL()]) {
-      ab.server.ns.listen(exports.URL(), {"filters": {}}, function(error, request) {
-        if(error) {
-          if(validArgs.callback)
-            validArgs.callback(error)
-          else throw error
-          amplify.unsubscribe(validArgs.event+":"+exports.URL(), referenceID)
-          if(validArgs.onComplete) {
-            amplify.unsubscribe("onComplete:"+exports.URL(), referenceID)
+    var onMethod = function(validArgs) {
+      if(ab.server.ns.namespacesListening[exports.URL()]) {
+        if(validArgs.event === "vertex_added")
+          setTimeout(function() {
+            ab.firing.prepareForNS('RETR', exports.URL(), {}, ab.cache.get('edges', exports.URL()), validArgs.callback)
+          },0)
+      }
+      amplify.subscribe(validArgs.event+":"+exports.URL(), referenceID, validArgs.callback)
+      if(validArgs.onComplete) {
+        amplify.subscribe("onComplete:"+exports.URL(), referenceID, function() {
+          amplify.unsubscribe("onComplete:"+exports.URL(), referenceID);
+          validArgs.onComplete(exports);
+        })
+      }
+      if(!ab.server.ns.namespacesListening[exports.URL()]) {
+        ab.server.ns.listen(exports.URL(), {"filters": {}}, function(error, request) {
+          if(error) {
+            if(validArgs.callback)
+              validArgs.callback(error)
+            else throw error
+            amplify.unsubscribe(validArgs.event+":"+exports.URL(), referenceID)
+            if(validArgs.onComplete) {
+              amplify.unsubscribe("onComplete:"+exports.URL(), referenceID)
+            }
           }
-        }
-      })
+        })
+      }
     }
+    
+    //setting proxies for fetching properties of vertices
+    var verticesLeft = 0;
+    var onCompleteFired;
+    var proxyCallback = function(error, vRef) {
+      if(error) return validArgs.callback(error);
+      verticesLeft += 1;
+      vRef.once('properties', function(error, r, vSnap) {
+        if(error) return validArgs.callback(error);
+        
+        verticesLeft -= 1;
+        validArgs.callback(null, vRef, vSnap);
+        if(validArgs.onComplete && onCompleteFired && verticesLeft === 0) {
+          validArgs.onComplete.apply(null, onCompleteFired);
+        }
+      });
+    }
+    
+    var proxyOnComplete = function() {
+      onCompleteFired = arguments;
+    }
+    
+    onMethod({
+      callback: proxyCallback,
+      onComplete: proxyOnComplete,
+      event: validArgs.event
+    });
   }
 
   exports.off = function(event) {
@@ -252,6 +281,34 @@ ab.interface.vertex = function(path, modify) {
       } else {
         proceed()
       }
+    },
+    onEdgesProxyForInsertingProperties: function(event, filters, interfaceCallback, onComplete) {
+      var edgesLeft = 0;
+      var onCompleteFired;
+      var proxyCallback = function(error, edgeRef, edgeSnap) {
+        if(error) return interfaceCallback(error);
+        edgesLeft += 1;
+        edgeRef.once('properties', function(error, vRef, vSnap) {
+          if(error) return interfaceCallback(error);
+          edgeSnap.properties = function() {
+            return vSnap.properties();
+          }
+          edgeSnap.prevProperties = function() {
+            return vSnap.prevProperties();
+          }
+          edgesLeft -= 1;
+          interfaceCallback(null, edgeRef, edgeSnap);
+          if(onComplete && onCompleteFired && edgesLeft === 0) {
+            onComplete.apply(null, onCompleteFired);
+          }
+        });
+      }
+      
+      var proxyOnComplete = function() {
+        onCompleteFired = arguments;
+      }
+      
+      privateData.onEdges(event, filters, proxyCallback, proxyOnComplete);
     }
   }
 
@@ -307,7 +364,7 @@ ab.interface.vertex = function(path, modify) {
       } else {
         if(validArgs.event == 'properties')
           privateData.onProperties(validArgs.callback)
-        else privateData.onEdges(validArgs.event, validArgs.filters, validArgs.callback, validArgs.onComplete)
+        else privateData.onEdgesProxyForInsertingProperties(validArgs.event, validArgs.filters, validArgs.callback, validArgs.onComplete)
       }
     }
     checkForCreationAndGoAhead()

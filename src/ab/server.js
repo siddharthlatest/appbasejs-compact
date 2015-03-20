@@ -6,28 +6,67 @@ ab.server = {
   realtime: {
   }
 }
-ab.server.realtime.socket = io(config.appbaseApiServer + ':' + (config.protocol === "https" ? 443 : 80));
-ab.server.realtime.socket.on('reconnect', function() {
+
+ab.server.timestamp = function(cb) {
+  atomic.get(config.appbaseApiServer + "/time")
+    .success(function(result) {
+      cb(null, result)
+    })
+    .error(function(error) {
+      cb(error)
+    })
+}
+
+//making a get request to server before connecting to io - this some how relates to autoscaling of api server
+var connectSocket = function() {
+  ab.server.timestamp(function(error) {
+    if(!error) {
+      ab.server.realtime.socket = io(config.appbaseApiServer + ':' + (config.protocol === "https" ? 443 : 80));
+    } else {
+      //try again
+      setTimeout(connectSocket, 500);
+    }
+  })
+}
+connectSocket();
+
+//setup a socket proxy for delaying calls to io socket until the socket is ready - always call proxy instead of direct 
+ab.server.realtime.socketProxy = {};
+["on", "emit", "removeListener"].forEach(function(method) {
+  ab.server.realtime.socketProxy[method] = function() {
+    var args = arguments;
+    var callSocket = function() {
+      if(ab.server.realtime.socket) { //check if the socket is ready
+        ab.server.realtime.socket[method].apply(ab.server.realtime.socket, args);
+      } else {
+        setTimeout(callSocket, 200);
+      }
+    }
+    callSocket();
+  }
+})
+
+ab.server.realtime.socketProxy.on('reconnect', function() {
   console.log('reconnect')
   //re-emit events, with timestamp
   for(var url in ab.server.ns.namespacesListening){
     //timestamp dsnt work for namespaces ab.server.ns.namespacesListening[url].timestamp = ab.cache.ns.timestamps[url]
     console.log('re-emitting:', url,'ns')
-    ab.server.realtime.socket.emit('new vertices', ab.server.ns.namespacesListening[url])
+    ab.server.realtime.socketProxy.emit('new vertices', ab.server.ns.namespacesListening[url])
   }
 
   for(var url in ab.server.vertex.urlsListening){
     ab.server.vertex.urlsListening[url].timestamp = ab.cache.timestamps[url] !== undefined?
       ab.cache.timestamps[url]['vertex']:undefined
     console.log('re-emitting:', url,'properties')
-    ab.server.realtime.socket.emit('properties', ab.server.vertex.urlsListening[url])
+    ab.server.realtime.socketProxy.emit('properties', ab.server.vertex.urlsListening[url])
   }
 
   for(var url in ab.server.edges.urlsListening){
     ab.server.edges.urlsListening[url].timestamp = ab.cache.timestamps[url] !== undefined?
      ab.cache.timestamps[url]['edges']:undefined
     console.log('re-emitting:', url,'edges')
-    ab.server.realtime.socket.emit('edges', ab.server.vertex.urlsListening[url])
+    ab.server.realtime.socketProxy.emit('edges', ab.server.vertex.urlsListening[url])
   }
 })
 
@@ -74,11 +113,11 @@ ab.server.ns = {
     ab.util.setCredsInData(data)
     var event = JSON.stringify(data)
     var listener
-    ab.server.realtime.socket.on(event, listener = function(result) {
+    ab.server.realtime.socketProxy.on(event, listener = function(result) {
       if(typeof result === 'string') {
         delete ab.server.edges.urlsListening[url]
         if(result === 'STOPPED') {
-          ab.server.realtime.socket.removeListener(event,listener)
+          ab.server.realtime.socketProxy.removeListener(event,listener)
           return
         }
         try {
@@ -146,7 +185,7 @@ ab.server.ns = {
     })
 
     ab.server.ns.namespacesListening[url] = data
-    ab.server.realtime.socket.emit("new vertices", data)
+    ab.server.realtime.socketProxy.emit("new vertices", data)
   },
   unlisten: function(url) {
     var data = ab.server.ns.namespacesListening[url]
@@ -155,7 +194,7 @@ ab.server.ns = {
     ab.cache.memStore[url] && (ab.cache.memStore[url] = {})
     if(data) {
       delete data.timestamp
-      ab.server.realtime.socket.emit("new vertices off", data)
+      ab.server.realtime.socketProxy.emit("new vertices off", data)
     }
   }
 }
@@ -200,11 +239,11 @@ ab.server.vertex = {
     ab.util.setCredsInData(data)
     var event = JSON.stringify(data)
     var listener
-    ab.server.realtime.socket.on(event, listener = function(result) {
+    ab.server.realtime.socketProxy.on(event, listener = function(result) {
       if(typeof result === 'string') {
         delete ab.server.vertex.urlsListening[url]
         if(result === 'STOPPED') {
-          ab.server.realtime.socket.removeListener(event,listener)
+          ab.server.realtime.socketProxy.removeListener(event,listener)
           return
         }
         try {
@@ -247,7 +286,7 @@ ab.server.vertex = {
       }
     })
     ab.server.vertex.urlsListening[url] = data
-    ab.server.realtime.socket.emit("properties", data)
+    ab.server.realtime.socketProxy.emit("properties", data)
   },
   unlisten: function(url) {
     var data = ab.server.vertex.urlsListening[url]
@@ -256,7 +295,7 @@ ab.server.vertex = {
     ab.cache.memStore[url] && (ab.cache.memStore[url]['vertex'] = {})
     if(data) {
       delete data.timestamp
-      ab.server.realtime.socket.emit("properties off", data)
+      ab.server.realtime.socketProxy.emit("properties off", data)
     }
   },
   delete: function(url, data, callback) {
@@ -309,7 +348,7 @@ ab.server.edges = {
     ab.cache.memStore[url] && (ab.cache.memStore[url]['edges'] = {})
     if(data) {
       delete data.timestamp
-      ab.server.realtime.socket.emit("edges off", data)
+      ab.server.realtime.socketProxy.emit("edges off", data)
     }
   },
   listen: function(url, requestdata, callback) {
@@ -321,11 +360,11 @@ ab.server.edges = {
     var event = JSON.stringify(data)
     data.timestamp = requestdata.timestamp
     var listener
-    ab.server.realtime.socket.on(event, listener = function(result) {
+    ab.server.realtime.socketProxy.on(event, listener = function(result) {
       if(typeof result === 'string') {
         delete ab.server.edges.urlsListening[url]
         if(result === 'STOPPED') {
-          ab.server.realtime.socket.removeListener(event,listener)
+          ab.server.realtime.socketProxy.removeListener(event,listener)
           return
         }
         try {
@@ -370,7 +409,7 @@ ab.server.edges = {
     if(ab.cache.timestamps[url] === undefined) ab.cache.timestamps[url] = {}
     ab.cache.timestamps[url]['edges'] = requestdata.timestamp
     data.timestamp = requestdata.timestamp
-    ab.server.realtime.socket.emit("edges", data)
+    ab.server.realtime.socketProxy.emit("edges", data)
   },
   delete: function(url, data, callback) {
     ab.util.setCredsInData(data)
@@ -417,16 +456,6 @@ ab.server.getAppSecret = function() {
 
 ab.server.getBaseURL = function() {
   return ab.server.baseURL
-}
-
-ab.server.timestamp = function(cb) {
-  atomic.get(config.appbaseApiServer + "/time")
-    .success(function(result) {
-      cb(null, result)
-    })
-    .error(function(error) {
-      cb(error)
-    })
 }
 
 module.exports = ab.server;

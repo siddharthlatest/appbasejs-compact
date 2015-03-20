@@ -441,7 +441,7 @@ describe('interface methods', function() {
     var appSecret = "4d8d0072580912343cd74a09015cd217"
     Appbase.credentials(appName, appSecret)
     var refs = [];
-    it.skip("edges: without filters: should get existing edges as well, onComplete should fire after that", function(done) {
+    it("edges: without filters: should get existing edges as well, onComplete should fire after that", function(done) {
       this.timeout(20000);
       var ref = Appbase.ns('misc').v(Appbase.uuid());
       refs[0] = ref;
@@ -498,7 +498,7 @@ describe('interface methods', function() {
       })
     })
     
-    it.skip("edges: with filters: onlyNew:true - should get only new edges", function(done) {
+    it("edges: with filters: onlyNew:true - should get only new edges", function(done) {
       this.timeout(20000);
       var ref = Appbase.ns('misc').v(Appbase.uuid());
       refs[1] = ref;
@@ -544,7 +544,7 @@ describe('interface methods', function() {
       })
     })
     
-    it.skip("edges: with filters: startAt: should only get edges with certain priorities", function(done) {
+    it("edges: with filters: startAt: should only get edges with certain priorities", function(done) {
       this.timeout(20000);
       var ref = Appbase.ns('misc').v(Appbase.uuid());
       refs[2] = ref;
@@ -577,7 +577,7 @@ describe('interface methods', function() {
       })
     })
     
-    it.skip("edges: with filters: endAt: should only get edges with certain priorities", function(done) {
+    it("edges: with filters: endAt: should only get edges with certain priorities", function(done) {
       this.timeout(20000);
       var ref = Appbase.ns('misc').v(Appbase.uuid());
       refs[2] = ref;
@@ -610,7 +610,7 @@ describe('interface methods', function() {
       })
     })
     
-    it.skip("edges: with filters: limit: should only get limited no. of edges", function(done) {
+    it("edges: with filters: limit: should only get limited no. of edges", function(done) {
       this.timeout(20000);
       var ref = Appbase.ns('misc').v(Appbase.uuid());
       refs[2] = ref;
@@ -628,7 +628,6 @@ describe('interface methods', function() {
           ref.on('edge_added', { limit: limit } ,function(error, edgeRef, edgeSnap) {
             if(error) return done(error);
             i+=1;
-            console.log(i);
             if(i <= limit) {
               if(i === limit) {
                 //wait for a 2 secs for any other edges to fire and then call done
@@ -642,7 +641,7 @@ describe('interface methods', function() {
       })
     })
     
-    it.skip("edges: with filters: skip: should skip certain edges", function(done) {
+    it("edges: with filters: skip: should skip certain edges", function(done) {
       this.timeout(20000);
       var ref = Appbase.ns('misc').v(Appbase.uuid());
       refs[2] = ref;

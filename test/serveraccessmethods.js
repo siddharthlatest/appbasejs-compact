@@ -209,6 +209,7 @@ if(isNode || (typeof ab !== 'undefined' && typeof ab.server !== 'undefined')) { 
               ab.server.vertex.delete(domain + '/' +path, {"data":data}, callback);
             }
           ], function(err, result) {
+            console.log(result);
             expect(result._id).to.be.a("string");
             expect(result.timestamp).to.be.a("number");
             expect(result.fgcolor).to.equal("");

@@ -47,25 +47,21 @@ ab.server.realtime.socketProxy = {};
 })
 
 ab.server.realtime.socketProxy.on('reconnect', function() {
-  console.log('reconnect')
   //re-emit events, with timestamp
   for(var url in ab.server.ns.namespacesListening){
     //timestamp dsnt work for namespaces ab.server.ns.namespacesListening[url].timestamp = ab.cache.ns.timestamps[url]
-    console.log('re-emitting:', url,'ns')
     ab.server.realtime.socketProxy.emit('new vertices', ab.server.ns.namespacesListening[url])
   }
 
   for(var url in ab.server.vertex.urlsListening){
     ab.server.vertex.urlsListening[url].timestamp = ab.cache.timestamps[url] !== undefined?
       ab.cache.timestamps[url]['vertex']:undefined
-    console.log('re-emitting:', url,'properties')
     ab.server.realtime.socketProxy.emit('properties', ab.server.vertex.urlsListening[url])
   }
 
   for(var url in ab.server.edges.urlsListening){
     ab.server.edges.urlsListening[url].timestamp = ab.cache.timestamps[url] !== undefined?
      ab.cache.timestamps[url]['edges']:undefined
-    console.log('re-emitting:', url,'edges')
     ab.server.realtime.socketProxy.emit('edges', ab.server.vertex.urlsListening[url])
   }
 })
@@ -123,7 +119,10 @@ ab.server.ns = {
         try {
           callback(new Error(result))
         } catch(e) {
-          console.log("Error: ",url,e)
+          //throwing the error in a different function as socket io would crash otherwise
+          setTimeout(0, function() {
+            throw e;
+          })
         }
       } else {
         try {
@@ -173,13 +172,23 @@ ab.server.ns = {
           }
 
         } catch(e) {
-          console.log("Error: ",url,e)
+          //throwing the error in a different function as socket io would crash otherwise
+          setTimeout(0, function() {
+            throw e;
+          })
         }
 
         try {
           callback(null, result)
         } catch(e) {
-          console.log("Error: ",url,e)
+          try {
+            callback(e)
+          } catch(e1) {
+            //throwing the error in a different function as socket io would crash otherwise
+            setTimeout(0, function() {
+              throw e1;
+            })
+          }
         }
       }
     })
@@ -249,7 +258,10 @@ ab.server.vertex = {
         try {
           callback(new Error(result))
         } catch(e) {
-          console.log("Error: ",url,e)
+          //throwing the error in a different function as socket io would crash otherwise
+          setTimeout(0, function() {
+            throw e;
+          })
         }
       } else {
         var previous = ab.cache.get("vertex", url)
@@ -270,7 +282,10 @@ ab.server.vertex = {
           try {
             callback(e);
           } catch(e) {
-            console.log("Error: ",url,e);
+            //throwing the error in a different function as socket io would crash otherwise
+            setTimeout(0, function() {
+              throw e;
+            })
           }
         }
 
@@ -280,7 +295,10 @@ ab.server.vertex = {
           try {
             callback(e);
           } catch(e) {
-            console.log("Error: ",url,e);
+            //throwing the error in a different function as socket io would crash otherwise
+            setTimeout(0, function() {
+              throw e;
+            })
           }
         }
       }
@@ -370,7 +388,10 @@ ab.server.edges = {
         try {
           callback(new Error(result))
         } catch(e) {
-          console.log("Error: ",url,e)
+          //throwing the error in a different function as socket io would crash otherwise
+          setTimeout(0, function() {
+            throw e;
+          })
         }
       } else {
         var previous = ab.cache.get("edges", url)
@@ -394,13 +415,24 @@ ab.server.edges = {
               ab.firing.prepareForEdges(result.optype, url, previous, result.edges)
           }
         } catch(e) {
-          console.log("Error: ",url,e)
+          
+          //throwing the error in a different function as socket io would crash otherwise
+          setTimeout(0, function() {
+            throw e;
+          })
         }
         result.edgeCache = ab.cache.get("edges", url)
         try {
           callback(null, result)
         } catch(e) {
-          console.log("Error: ",url,e)
+          try {
+            callback(e)
+          } catch (e1) {
+            //throwing the error in a different function as socket io would crash otherwise
+            setTimeout(0, function() {
+              throw e1;
+            })
+          }
         }
       }
     })
